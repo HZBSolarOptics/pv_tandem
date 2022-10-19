@@ -103,3 +103,12 @@ if __name__ == "__main__":
     ax.set_ylim([0, 2500])
     ax.set_xlabel('Day of year')
     ax.set_ylabel('Daily energy yield (Wh/m²)')
+    
+    fig, ax = plt.subplots(dpi=300)
+    power_HZB.groupby(tandem_P_kit.index.dayofyear).sum().plot(ax=ax, label='HZB_reimplement')
+    tandem_P_kit.groupby(tandem_P_kit.index.dayofyear).sum().plot(ax=ax, label='KIT')
+    ax.legend()
+    ax.set_ylim([0, 2500])
+    ax.set_xlabel('Day of year')
+    ax.set_ylabel('Daily energy yield (Wh/m²)')
+    
