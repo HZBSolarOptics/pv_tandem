@@ -22,7 +22,7 @@ def calc_current(spec, eqe):
          Time series of spectral irradiance in the plane of the solar cell. The
          names columns of the DataFrame have to eb the wavelength of the incidenting
          light in nm.
-         
+
     eqe : pandas.Dataframe
         External quantum efficiency of the solar cell.
 
@@ -134,20 +134,27 @@ class TandemSimulator:
         subcells,
         ambient_temp,
         min_Jsc_both_cells=True,
+        eqe_back=None,
+        bifacial=False,
     ):
         self.electrics = electrical_parameters
         self.subcells = subcells
         self.spec_irrad = spec_irrad
         self.eqe = eqe
+        self.eqe_back = eqe_back
+        self.bifacial = bifacial
         self.Jsc = self.calculate_Jsc(min_Jsc_both_cells)
 
         self.electrical_models = {}
-        self.j_arr = np.linspace(-5, 35, 401)
+        self.j_arr = np.linspace(0, 45, 451)
         self.cell_temps = {
             subcell: calc_temp_from_NOCT(
-                self.electrics["noct"][subcell], ambient_temp, spec_irrad.sum(axis=1),
+                self.electrics["noct"][subcell],
+                ambient_temp,
+                spec_irrad["front"].sum(axis=1),
             )
-            * 1.15  # correction for limited range of spectrum (onyl until 1200 nm)
+            # correction for limited range of spectrum (onyl until 1200 nm)
+            * 1.15
             for subcell in subcells
         }
 
@@ -166,10 +173,19 @@ class TandemSimulator:
         Jsc = []
         for subcell in self.subcells:
             Jsc_loop = pd.Series(
-                calc_current(self.spec_irrad, self.eqe[subcell]) / 10, name=subcell
+                calc_current(self.spec_irrad["front"], self.eqe[subcell]) / 10,
+                name=subcell,
             )
             Jsc.append(Jsc_loop)
         Jsc = pd.concat(Jsc, axis=1)
+
+        if self.bifacial is True:
+            for subcell in self.subcells:
+                Jsc_backside = pd.Series(
+                    calc_current(self.spec_irrad["back"], self.eqe_back[subcell]) / 10,
+                    name=subcell,
+                )
+                Jsc[subcell] = Jsc[subcell] + Jsc_backside
 
         if min_Jsc_both_cells:
             Jsc_min = Jsc.min(axis=1)
@@ -205,13 +221,13 @@ class spectral_illumination(bi.YieldSimulator):
         spectral_irradiance,
         solarposition,
         bifacial=True,
-        albedo=0.2,
+        albedo=0.6,
         module_length=1.96,
         front_eff=0.2,
         back_eff=0.18,
         module_height=0.5,
         spacing=20,
-        tilt_angle=20,
+        tilt_angle=25,
         tmy_data=True,
     ):
         """
@@ -251,21 +267,43 @@ class spectral_illumination(bi.YieldSimulator):
         factors = self.simulate(spacing=self.spacing, tilt=self.tilt_angle)
         factors = factors.groupby(axis=1, level=0).mean()
 
-        factors = factors.loc[:, factors.columns.to_series().str.contains("front")]
+        def scale_irradiance(dni, dhi, factors):
+            spec_irrad_dir = (
+                factors.loc[:, factors.columns.to_series().str.contains("direct")]
+                .sum(axis=1)
+                .values[:, None]
+                * dni
+            )
+            spec_irrad_diff = (
+                factors.loc[:, factors.columns.to_series().str.contains("diffuse")]
+                .sum(axis=1)
+                .values[:, None]
+                * dhi
+            )
+            spec_irrad_inplane = spec_irrad_dir + spec_irrad_diff
+            return spec_irrad_inplane
 
-        spec_irrad_dir = (
-            factors.loc[:, factors.columns.to_series().str.contains("direct")]
-            .sum(axis=1)
-            .values[:, None]
-            * self.spectral_irradiance["dni"]
-        )
-        spec_irrad_diff = (
-            factors.loc[:, factors.columns.to_series().str.contains("diffuse")]
-            .sum(axis=1)
-            .values[:, None]
-            * self.spectral_irradiance["dhi"]
+        factors_front = factors.loc[
+            :, factors.columns.to_series().str.contains("front")
+        ]
+        factors_back = factors.loc[:, factors.columns.to_series().str.contains("back")]
+
+        spec_irrad_inplane_front = scale_irradiance(
+            self.spectral_irradiance["dni"],
+            self.spectral_irradiance["dhi"],
+            factors_front,
         )
 
-        spec_irrad_inplane = spec_irrad_dir + spec_irrad_diff
+        spec_irrad_inplane_back = scale_irradiance(
+            self.spectral_irradiance["dni"],
+            self.spectral_irradiance["dhi"],
+            factors_back,
+        )
+
+        spec_irrad_inplane = pd.concat(
+            [spec_irrad_inplane_front, spec_irrad_inplane_back],
+            axis=1,
+            keys=["front", "back"],
+        )
 
         return spec_irrad_inplane
