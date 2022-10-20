@@ -130,7 +130,7 @@ if __name__ == "__main__":
     energy_yield = []
     energy_yield_bif = []
 
-    bandgap_array = [1.7]#[1.6, 1.65, 1.7, 1.75, 1.8]
+    bandgap_array = [1.6, 1.65, 1.7, 1.75, 1.8]
 
     for bandgap in bandgap_array:
 
@@ -139,7 +139,10 @@ if __name__ == "__main__":
         )
         
         spec_irrad_inplane = spectral_illumination(
-            spectral_irradiance=spectral_irrad, solarposition=solarposition
+            spectral_irradiance=spectral_irrad, solarposition=solarposition,
+            albedo=0.3,
+            spacing=20,
+            tilt_angle=20,
         ).calc_spectral_inplane()
         
         j0_pero = calc_j0(eqe['pero'])

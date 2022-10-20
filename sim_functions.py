@@ -76,6 +76,20 @@ class OneDiodeModel:
 
     def calc_iv(self, Jsc, cell_temp, j_arr):
 
+        def lambertw_large(x):
+            result = np.log(x)-np.log(np.log(x))+np.log(np.log(x))/np.log(x)
+            return result        
+
+        def lambertwlog(x):
+            large_x = x.copy()
+            large_x_mask = x>20
+            small_x = lambertw(np.exp(np.clip(x, a_min=None, a_max=20)))
+            large_x = lambertw_large(np.exp(x.astype(np.float128)))
+            
+            x = np.where(large_x_mask, large_x, small_x)
+            
+            return x
+                        
         # Thermal voltage at room temperature in V
         Vth = 0.02569
 
@@ -83,13 +97,13 @@ class OneDiodeModel:
         factorVoc = 1 + self.tcVoc * (cell_temp - 25)
 
         Jsc = Jsc * factorJsc
-
+        
         Voc_rt = (
             Jsc / 1000 * self.R_shunt
             - self.n
             * Vth
-            * lambertw(
-                np.exp(
+            * lambertwlog(
+                (
                     np.log(self.j0 / 1000 * self.R_shunt)
                     + self.R_shunt * (Jsc + self.j0) / (1000 * self.n * Vth)
                     - np.log(self.n * Vth)
@@ -97,6 +111,22 @@ class OneDiodeModel:
             )
             + self.j0 / 1000 * self.R_shunt
         )
+        
+# =============================================================================
+#         Voc_rt = (
+#             Jsc / 1000 * self.R_shunt
+#             - self.n
+#             * Vth
+#             * lambertw(
+#                 np.exp(
+#                     np.log(self.j0 / 1000 * self.R_shunt)
+#                     + self.R_shunt * (Jsc + self.j0) / (1000 * self.n * Vth)
+#                     - np.log(self.n * Vth)
+#                 )
+#             )
+#             + self.j0 / 1000 * self.R_shunt
+#         )
+# =============================================================================
 
         Voc_rt[Jsc < 0.1] = np.nan
         Voc = Voc_rt * factorVoc
@@ -111,16 +141,33 @@ class OneDiodeModel:
             - np.log(self.n * Vth)
         )
 
+# =============================================================================
+#         V = (
+#             np.subtract.outer(
+#                 Jsc / 1000 * self.R_shunt,
+#                 j_arr / 1000 * (self.R_shunt + self.R_series),
+#             )
+#             - self.n * Vth * lambertw_large(np.exp(lambw))
+#             + (self.j0 / 1000 * self.R_shunt - Voc_rt + Voc)[:, None]
+#         )
+#         
+# =============================================================================
         V = (
             np.subtract.outer(
                 Jsc / 1000 * self.R_shunt,
                 j_arr / 1000 * (self.R_shunt + self.R_series),
             )
-            - self.n * Vth * lambertw(np.exp(lambw))
+            - self.n * Vth * lambertwlog((lambw))
             + (self.j0 / 1000 * self.R_shunt - Voc_rt + Voc)[:, None]
         )
 
         V[(V < 0) | (np.isnan(V))] = 0
+        
+        V_oc = V.max(axis=1)
+        P = V*j_arr[None, :]
+        P_max = P.max(axis=1)
+        
+        V_mpp = V[np.arange(0,8760),P.argmax(axis=1)]
 
         return V
 
@@ -221,13 +268,13 @@ class spectral_illumination(bi.YieldSimulator):
         spectral_irradiance,
         solarposition,
         bifacial=True,
-        albedo=0.6,
+        albedo=0.3,
         module_length=1.96,
         front_eff=0.2,
         back_eff=0.18,
         module_height=0.5,
         spacing=20,
-        tilt_angle=25,
+        tilt_angle=20,
         tmy_data=True,
     ):
         """
