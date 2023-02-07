@@ -104,11 +104,34 @@ if __name__ == "__main__":
     ax.set_xlabel('Day of year')
     ax.set_ylabel('Daily energy yield (Wh/m²)')
     
+    
+    mat = scipy.io.loadmat('eycalc_complete_dump_miami.mat')
+    i_ph_kit = pd.DataFrame(mat['EY'][0]['Jsc'][0], columns = ['pero', 'si'], index = spec_irrad_inplane.index)
+    cell_temps = pd.DataFrame(mat['EY'][0]['TempModule'][0], columns = ['pero', 'si'], index = spec_irrad_inplane.index)
+    
+    tandem_kit = TandemSimulator(spec_irrad_inplane, eqe, electrical_parameters, subcells, ambient_temp)
+    
+    i_ph_kit['si'] = i_ph_kit.min(axis=1)
+    i_ph_kit['pero'] = i_ph_kit['si']
+    
+    tandem_kit.Jsc = i_ph_kit
+    tandem_kit.cell_temps = cell_temps
+    power_kit = tandem_kit.calc_power()*10
+    
     fig, ax = plt.subplots(dpi=300)
-    power_HZB.groupby(tandem_P_kit.index.dayofyear).sum().plot(ax=ax, label='HZB_reimplement')
+    #power_HZB.groupby(tandem_P_kit.index.dayofyear).sum().plot(ax=ax, label='HZB_reimplement')
+    power_kit.groupby(tandem_P_kit.index.dayofyear).sum().plot(ax=ax, label='HZB_reimplement_KIT_ph')
     tandem_P_kit.groupby(tandem_P_kit.index.dayofyear).sum().plot(ax=ax, label='KIT')
+    
     ax.legend()
     ax.set_ylim([0, 2500])
     ax.set_xlabel('Day of year')
     ax.set_ylabel('Daily energy yield (Wh/m²)')
+    
+    
+    
+    
+    
+    
+    
     

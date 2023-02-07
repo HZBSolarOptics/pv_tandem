@@ -132,6 +132,79 @@ if __name__ == "__main__":
 
     bandgap_array = [1.6, 1.65, 1.7, 1.75, 1.8]
 
+    Jsc_mono = []
+    Jsc_bif = []
+
+    for bandgap in bandgap_array:
+
+        eqe = load_eqe_EYcalc(
+            f"optics_{bandgap}eV_1000nm.mat", wavelengths=spectral_irrad["dni"].columns
+        )
+        
+        spec_irrad_inplane = spectral_illumination(
+            spectral_irradiance=spectral_irrad, solarposition=solarposition,
+            albedo=0.3,
+            spacing=20,
+            tilt_angle=20,
+        ).calc_spectral_inplane()
+        
+        j0_pero = calc_j0(eqe['pero'])
+        
+        electrical_parameters = {
+            "RshTandem": 1000,
+            "RsTandem": 3,
+            "j0": {"pero": j0_pero, "si": 1e-12},
+            "n": {"pero": 1.1, "si": 1},
+            "Temp": {"pero": 25, "si": 25},
+            "noct": {"pero": 48, "si": 48},
+            "tcJsc": {"pero": 0.0002, "si": 0.00032},
+            "tcVoc": {"pero": -0.002, "si": -0.0041},
+        }
+    
+        subcells = ["pero", "si"]
+    
+        tandem = TandemSimulator(
+            spec_irrad_inplane, eqe, electrical_parameters, subcells, ambient_temp,
+            min_Jsc_both_cells = False
+        )
+        
+        Jsc_mono.append(tandem.Jsc.sum())
+        
+        #energy_yield.append(tandem.calc_power().sum().real * 10)
+    
+        tandem_bif = TandemSimulator(
+            spec_irrad_inplane,
+            eqe,
+            electrical_parameters,
+            subcells,
+            ambient_temp,
+            eqe_back=eqe_backside,
+            bifacial=True,
+            min_Jsc_both_cells = False
+        )
+        Jsc_bif.append(tandem_bif.Jsc.sum())
+
+        #energy_yield_bif.append(tandem_bif.calc_power().sum().real * 10)
+      
+        
+    Jsc_mono = pd.concat(Jsc_mono, axis=1).T
+    Jsc_mono.index = bandgap_array
+    
+    Jsc_bif = pd.concat(Jsc_bif, axis=1).T
+    Jsc_bif.index = bandgap_array
+    
+    fig, ax = plt.subplots(dpi=200)
+    
+    (Jsc_mono * 10 / 1000).plot(ax=ax)
+    (Jsc_bif * 10 / 1000).plot(ax=ax)
+    
+    ax.legend(["Pero mono", "Si mono", 'Pero bif', 'Si bif'])
+    ax.set_xlabel('Bandgap (nm)')
+    ax.set_ylabel('Time integrated Jsc (kAh/m²/year)')
+        
+    asdf
+        
+
     for bandgap in bandgap_array:
 
         eqe = load_eqe_EYcalc(
@@ -165,6 +238,8 @@ if __name__ == "__main__":
             min_Jsc_both_cells = True
         )
         
+        Jsc_mono.append(tandem.Jsc.sum())
+        
         energy_yield.append(tandem.calc_power().sum().real * 10)
     
         tandem_bif = TandemSimulator(
@@ -175,9 +250,10 @@ if __name__ == "__main__":
             ambient_temp,
             eqe_back=eqe_backside,
             bifacial=True,
-            min_Jsc_both_cells = True
+            min_Jsc_both_cells = False
         )
-        
+        Jsc_mono.append(tandem_bif.Jsc.sum())
+
         energy_yield_bif.append(tandem_bif.calc_power().sum().real * 10)
         
     energy_yield = pd.Series(energy_yield, index=bandgap_array).rename('monofacial')
