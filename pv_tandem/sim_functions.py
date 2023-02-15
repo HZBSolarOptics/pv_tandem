@@ -8,6 +8,7 @@ from scipy.special import lambertw
 from scipy import constants
 import pvlib
 import bifacial_illumination as bi
+import os
 
 # import cell_sim as cs
 
@@ -31,12 +32,23 @@ def calc_current(spec, eqe):
     current : numpy.array
         Current generated in the solar cell in A/m²
     """
-    norm_absorbtion = spec.multiply(eqe, axis=1)
-    wl_arr = norm_absorbtion.columns.to_series()
-    photon_flux = (norm_absorbtion / constants.h / constants.c).multiply(
-        wl_arr * 1e-9, axis=1
-    )
-    current = np.trapz(photon_flux, x=wl_arr) * constants.e
+    if len(spec.shape) > 1:
+        #spec is timeseries of spectral illumination
+        norm_absorbtion = spec.multiply(eqe, axis=1)
+        wl_arr = norm_absorbtion.columns.to_series()
+        photon_flux = (norm_absorbtion / constants.h / constants.c).multiply(
+            wl_arr * 1e-9, axis=1
+        )
+        current = np.trapz(photon_flux, x=wl_arr) * constants.e
+    else:
+        #spec is single spectrum
+        norm_absorbtion = eqe.multiply(spec, axis=0)
+        wl_arr = norm_absorbtion.index.to_series()
+        photon_flux = (norm_absorbtion / constants.h / constants.c).multiply(
+            wl_arr * 1e-9, axis=0
+        )
+        current = np.trapz(photon_flux, x=wl_arr, axis=0) * constants.e
+        
     return current
     # return photo_flux.apply(np.trapz, x=wl_arr, axis=1) * constants.e
 
@@ -112,22 +124,6 @@ class OneDiodeModel:
             + self.j0 / 1000 * self.R_shunt
         )
         
-# =============================================================================
-#         Voc_rt = (
-#             Jsc / 1000 * self.R_shunt
-#             - self.n
-#             * Vth
-#             * lambertw(
-#                 np.exp(
-#                     np.log(self.j0 / 1000 * self.R_shunt)
-#                     + self.R_shunt * (Jsc + self.j0) / (1000 * self.n * Vth)
-#                     - np.log(self.n * Vth)
-#                 )
-#             )
-#             + self.j0 / 1000 * self.R_shunt
-#         )
-# =============================================================================
-
         Voc_rt[Jsc < 0.1] = np.nan
         Voc = Voc_rt * factorVoc
 
@@ -141,17 +137,6 @@ class OneDiodeModel:
             - np.log(self.n * Vth)
         )
 
-# =============================================================================
-#         V = (
-#             np.subtract.outer(
-#                 Jsc / 1000 * self.R_shunt,
-#                 j_arr / 1000 * (self.R_shunt + self.R_series),
-#             )
-#             - self.n * Vth * lambertw_large(np.exp(lambw))
-#             + (self.j0 / 1000 * self.R_shunt - Voc_rt + Voc)[:, None]
-#         )
-#         
-# =============================================================================
         V = (
             np.subtract.outer(
                 Jsc / 1000 * self.R_shunt,
@@ -167,7 +152,7 @@ class OneDiodeModel:
         P = V*j_arr[None, :]
         P_max = P.max(axis=1)
         
-        V_mpp = V[np.arange(0,8760),P.argmax(axis=1)]
+        #V_mpp = V[np.arange(0,8760),P.argmax(axis=1)]
 
         return V
 
@@ -178,14 +163,15 @@ class TandemSimulator:
         spec_irrad,
         eqe,
         electrical_parameters,
-        subcells,
+        subcell_names,
         ambient_temp,
+        temp_model='noct',
         min_Jsc_both_cells=True,
         eqe_back=None,
         bifacial=False,
     ):
         self.electrics = electrical_parameters
-        self.subcells = subcells
+        self.subcell_names = subcell_names
         self.spec_irrad = spec_irrad
         self.eqe = eqe
         self.eqe_back = eqe_back
@@ -194,18 +180,24 @@ class TandemSimulator:
 
         self.electrical_models = {}
         self.j_arr = np.linspace(0, 45, 451)
-        self.cell_temps = {
-            subcell: calc_temp_from_NOCT(
-                self.electrics["noct"][subcell],
-                ambient_temp,
-                spec_irrad["front"].sum(axis=1),
-            )
-            # correction for limited range of spectrum (onyl until 1200 nm)
-            * 1.15
-            for subcell in subcells
-        }
+        if temp_model is None:
+            self.cell_temps = {
+                subcell: pd.Series(25)
+                for subcell in subcell_names
+            }
+        else:
+            self.cell_temps = {
+                subcell: calc_temp_from_NOCT(
+                    self.electrics["noct"][subcell],
+                    ambient_temp,
+                    spec_irrad["front"].sum(axis=-1),
+                )
+                # correction for limited range of spectrum (onyl until 1200 nm)
+                * 1.15
+                for subcell in subcell_names
+            }
 
-        for subcell in subcells:
+        for subcell in subcell_names:
             self.electrical_models[subcell] = OneDiodeModel(
                 tcJsc=self.electrics["tcJsc"][subcell],
                 tcVoc=self.electrics["tcVoc"][subcell],
@@ -218,7 +210,7 @@ class TandemSimulator:
     def calculate_Jsc(self, min_Jsc_both_cells):
 
         Jsc = []
-        for subcell in self.subcells:
+        for subcell in self.subcell_names:
             Jsc_loop = pd.Series(
                 calc_current(self.spec_irrad["front"], self.eqe[subcell]) / 10,
                 name=subcell,
@@ -227,7 +219,7 @@ class TandemSimulator:
         Jsc = pd.concat(Jsc, axis=1)
 
         if self.bifacial is True:
-            for subcell in self.subcells:
+            for subcell in self.subcell_names:
                 Jsc_backside = pd.Series(
                     calc_current(self.spec_irrad["back"], self.eqe_back[subcell]) / 10,
                     name=subcell,
@@ -243,7 +235,13 @@ class TandemSimulator:
 
     def calc_power(self):
         V = []
-        for subcell in self.subcells:
+        
+        
+        
+        for subcell in self.subcell_names:
+            #if type(cell_temps) == pd.Series:
+            #    cell_temps = self.cell_temps[subcell].values
+            
             V.append(
                 pd.DataFrame(
                     self.electrical_models[subcell].calc_iv(
@@ -253,14 +251,30 @@ class TandemSimulator:
                     )
                 )
             )
-        V = pd.concat(V, axis=1, keys=self.subcells)
+        V = pd.concat(V, axis=1, keys=self.subcell_names)
+        V = V.astype(float)
         V_tandem = V.groupby(level=1, axis=1).sum()
 
         P = V_tandem.values * self.j_arr[None, :]
         P_max = P.max(axis=1)
-        P_max = pd.Series(P_max, index=self.spec_irrad.index)
+        P_max = pd.Series(P_max)
         return P_max
 
+class AM15g():
+    def __init__(
+            self):
+        csv_file_path = os.path.join(os.path.dirname(__file__),
+                                     'data', 'ASTMG173.csv')
+        self.spec = pd.read_csv(csv_file_path, sep=';')
+        self.spec.columns = ['wavelength', 'extra_terra', 'global', 'direct']
+        self.spec = self.spec.set_index('wavelength')['global']
+        
+    def interpolate(self, wavelengths):
+        spec_return = pd.Series(
+            np.interp(wavelengths, self.spec.index, self.spec),
+            index = wavelengths
+            )
+        return spec_return
 
 class spectral_illumination(bi.YieldSimulator):
     def __init__(
