@@ -88,15 +88,15 @@ class OneDiodeModel:
 
     def calc_iv(self, Jsc, cell_temp, j_arr):
 
-        def lambertw_large(x):
-            result = np.log(x)-np.log(np.log(x))+np.log(np.log(x))/np.log(x)
+        def lambertw_exp_large(x):
+            result = x-np.log(x)+np.log(x)/x
             return result        
 
         def lambertwlog(x):
             large_x = x.copy()
             large_x_mask = x>20
             small_x = lambertw(np.exp(np.clip(x, a_min=None, a_max=20)))
-            large_x = lambertw_large(np.exp(x.astype(np.float128)))
+            large_x = lambertw_exp_large(x)
             
             x = np.where(large_x_mask, large_x, small_x)
             
@@ -146,11 +146,11 @@ class OneDiodeModel:
             + (self.j0 / 1000 * self.R_shunt - Voc_rt + Voc)[:, None]
         )
 
-        V[(V < 0) | (np.isnan(V))] = 0
+        #V[(V < 0) | (np.isnan(V))] = 0
         
-        V_oc = V.max(axis=1)
-        P = V*j_arr[None, :]
-        P_max = P.max(axis=1)
+        #V_oc = V.max(axis=1)
+        #P = V*j_arr[None, :]
+        #P_max = P.max(axis=1)
         
         #V_mpp = V[np.arange(0,8760),P.argmax(axis=1)]
 
@@ -202,7 +202,7 @@ class TandemSimulator:
                 tcJsc=self.electrics["tcJsc"][subcell],
                 tcVoc=self.electrics["tcVoc"][subcell],
                 R_shunt=self.electrics["RshTandem"],
-                R_series=self.electrics["RsTandem"],
+                R_series=self.electrics["Rs"][subcell],
                 n=self.electrics["n"][subcell],
                 j0=self.electrics["j0"][subcell],
             )
@@ -232,11 +232,34 @@ class TandemSimulator:
                 Jsc[subcell] = Jsc_min
 
         return Jsc
+    
+    def calc_IV(self, Jsc, return_subsells=False):
+        V = []
+        
+        for subcell in self.subcell_names:
+            #if type(cell_temps) == pd.Series:
+            #    cell_temps = self.cell_temps[subcell].values
+            
+            V.append(
+                pd.DataFrame(
+                    self.electrical_models[subcell].calc_iv(
+                        Jsc[subcell].values,
+                        self.cell_temps[subcell].values,
+                        self.j_arr,
+                    )
+                )
+            )
+        V = pd.concat(V, axis=1, keys=self.subcell_names)
+        V = V.astype(float)
+        V_tandem = V.groupby(level=1, axis=1).sum()
+
+        if return_subsells:
+            return V_tandem, V
+        else:
+            return V_tandem
 
     def calc_power(self):
         V = []
-        
-        
         
         for subcell in self.subcell_names:
             #if type(cell_temps) == pd.Series:
