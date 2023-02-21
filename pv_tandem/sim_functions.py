@@ -201,8 +201,8 @@ class TandemSimulator:
             self.electrical_models[subcell] = OneDiodeModel(
                 tcJsc=self.electrics["tcJsc"][subcell],
                 tcVoc=self.electrics["tcVoc"][subcell],
-                R_shunt=self.electrics["RshTandem"],
-                R_series=self.electrics["Rs"][subcell],
+                R_shunt=self.electrics["Rsh"][subcell],
+                R_series=self.electrics["RsTandem"]/2,
                 n=self.electrics["n"][subcell],
                 j0=self.electrics["j0"][subcell],
             )
@@ -249,9 +249,11 @@ class TandemSimulator:
                     )
                 )
             )
+            
         V = pd.concat(V, axis=1, keys=self.subcell_names)
         V = V.astype(float)
-        V_tandem = V.groupby(level=1, axis=1).sum()
+        V[V<0] = np.nan
+        V_tandem = V.groupby(level=1, axis=1).aggregate(lambda x: np.sum(x.values))#.apply(lambda x: np.sum(x))
 
         if return_subsells:
             return V_tandem, V
