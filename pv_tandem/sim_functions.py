@@ -33,7 +33,7 @@ def calc_current(spec, eqe):
         Current generated in the solar cell in A/m²
     """
     if len(spec.shape) > 1:
-        #spec is timeseries of spectral illumination
+        # spec is timeseries of spectral illumination
         norm_absorbtion = spec.multiply(eqe, axis=1)
         wl_arr = norm_absorbtion.columns.to_series()
         photon_flux = (norm_absorbtion / constants.h / constants.c).multiply(
@@ -41,14 +41,14 @@ def calc_current(spec, eqe):
         )
         current = np.trapz(photon_flux, x=wl_arr) * constants.e
     else:
-        #spec is single spectrum
+        # spec is single spectrum
         norm_absorbtion = eqe.multiply(spec, axis=0)
         wl_arr = norm_absorbtion.index.to_series()
         photon_flux = (norm_absorbtion / constants.h / constants.c).multiply(
             wl_arr * 1e-9, axis=0
         )
         current = np.trapz(photon_flux, x=wl_arr, axis=0) * constants.e
-        
+
     return current
     # return photo_flux.apply(np.trapz, x=wl_arr, axis=1) * constants.e
 
@@ -87,21 +87,20 @@ class OneDiodeModel:
         self.j0 = j0
 
     def calc_iv(self, Jsc, cell_temp, j_arr):
-
         def lambertw_exp_large(x):
-            result = x-np.log(x)+np.log(x)/x
-            return result        
+            result = x - np.log(x) + np.log(x) / x
+            return result
 
         def lambertwlog(x):
             large_x = x.copy()
-            large_x_mask = x>20
+            large_x_mask = x > 20
             small_x = lambertw(np.exp(np.clip(x, a_min=None, a_max=20)))
             large_x = lambertw_exp_large(x)
-            
+
             x = np.where(large_x_mask, large_x, small_x)
-            
+
             return x
-                        
+
         # Thermal voltage at room temperature in V
         Vth = 0.02569
 
@@ -109,7 +108,7 @@ class OneDiodeModel:
         factorVoc = 1 + self.tcVoc * (cell_temp - 25)
 
         Jsc = Jsc * factorJsc
-        
+
         Voc_rt = (
             Jsc / 1000 * self.R_shunt
             - self.n
@@ -123,7 +122,7 @@ class OneDiodeModel:
             )
             + self.j0 / 1000 * self.R_shunt
         )
-        
+
         Voc_rt[Jsc < 0.1] = np.nan
         Voc = Voc_rt * factorVoc
 
@@ -146,13 +145,13 @@ class OneDiodeModel:
             + (self.j0 / 1000 * self.R_shunt - Voc_rt + Voc)[:, None]
         )
 
-        #V[(V < 0) | (np.isnan(V))] = 0
-        
-        #V_oc = V.max(axis=1)
-        #P = V*j_arr[None, :]
-        #P_max = P.max(axis=1)
-        
-        #V_mpp = V[np.arange(0,8760),P.argmax(axis=1)]
+        # V[(V < 0) | (np.isnan(V))] = 0
+
+        # V_oc = V.max(axis=1)
+        # P = V*j_arr[None, :]
+        # P_max = P.max(axis=1)
+
+        # V_mpp = V[np.arange(0,8760),P.argmax(axis=1)]
 
         return V
 
@@ -165,7 +164,7 @@ class TandemSimulator:
         electrical_parameters,
         subcell_names,
         ambient_temp,
-        temp_model='noct',
+        temp_model="noct",
         min_Jsc_both_cells=True,
         eqe_back=None,
         bifacial=False,
@@ -182,8 +181,7 @@ class TandemSimulator:
         self.j_arr = np.linspace(0, 45, 451)
         if temp_model is None:
             self.cell_temps = {
-                subcell: pd.Series(25)
-                for subcell in subcell_names
+                subcell: pd.Series(25) for subcell in subcell_names
             }
         else:
             self.cell_temps = {
@@ -202,7 +200,7 @@ class TandemSimulator:
                 tcJsc=self.electrics["tcJsc"][subcell],
                 tcVoc=self.electrics["tcVoc"][subcell],
                 R_shunt=self.electrics["Rsh"][subcell],
-                R_series=self.electrics["RsTandem"]/2,
+                R_series=self.electrics["RsTandem"] / 2,
                 n=self.electrics["n"][subcell],
                 j0=self.electrics["j0"][subcell],
             )
@@ -221,7 +219,10 @@ class TandemSimulator:
         if self.bifacial is True:
             for subcell in self.subcell_names:
                 Jsc_backside = pd.Series(
-                    calc_current(self.spec_irrad["back"], self.eqe_back[subcell]) / 10,
+                    calc_current(
+                        self.spec_irrad["back"], self.eqe_back[subcell]
+                    )
+                    / 10,
                     name=subcell,
                 )
                 Jsc[subcell] = Jsc[subcell] + Jsc_backside
@@ -232,14 +233,14 @@ class TandemSimulator:
                 Jsc[subcell] = Jsc_min
 
         return Jsc
-    
+
     def calc_IV(self, Jsc, return_subsells=False):
         V = []
-        
+
         for subcell in self.subcell_names:
-            #if type(cell_temps) == pd.Series:
+            # if type(cell_temps) == pd.Series:
             #    cell_temps = self.cell_temps[subcell].values
-            
+
             V.append(
                 pd.DataFrame(
                     self.electrical_models[subcell].calc_iv(
@@ -249,11 +250,13 @@ class TandemSimulator:
                     )
                 )
             )
-            
+
         V = pd.concat(V, axis=1, keys=self.subcell_names)
         V = V.astype(float)
-        V[V<0] = np.nan
-        V_tandem = V.groupby(level=1, axis=1).aggregate(lambda x: np.sum(x.values))#.apply(lambda x: np.sum(x))
+        V[V < 0] = np.nan
+        V_tandem = V.groupby(level=1, axis=1).aggregate(
+            lambda x: np.sum(x.values)
+        )  # .apply(lambda x: np.sum(x))
 
         if return_subsells:
             return V_tandem, V
@@ -262,11 +265,11 @@ class TandemSimulator:
 
     def calc_power(self):
         V = []
-        
+
         for subcell in self.subcell_names:
-            #if type(cell_temps) == pd.Series:
+            # if type(cell_temps) == pd.Series:
             #    cell_temps = self.cell_temps[subcell].values
-            
+
             V.append(
                 pd.DataFrame(
                     self.electrical_models[subcell].calc_iv(
@@ -285,21 +288,42 @@ class TandemSimulator:
         P_max = pd.Series(P_max)
         return P_max
 
-class AM15g():
-    def __init__(
-            self):
-        csv_file_path = os.path.join(os.path.dirname(__file__),
-                                     'data', 'ASTMG173.csv')
-        self.spec = pd.read_csv(csv_file_path, sep=';')
-        self.spec.columns = ['wavelength', 'extra_terra', 'global', 'direct']
-        self.spec = self.spec.set_index('wavelength')['global']
-        
+
+class AM15g:
+    """
+    This class reads the data from the ASTMG173.csv file and stores it as a pandas Series. It also provides a method to interpolate the spectrum at given wavelengths.
+
+    Attributes:
+        spec (pd.Series): The global solar spectrum as a function of wavelength in nm.
+
+    Methods:
+        interpolate(wavelengths): Returns the interpolated spectrum at the given wavelengths as a pandas Series.
+    """
+
+    def __init__(self):
+        """Initializes the AM15g class by reading the data from the csv file."""
+        csv_file_path = os.path.join(
+            os.path.dirname(__file__), "data", "ASTMG173.csv"
+        )
+        self.spec = pd.read_csv(csv_file_path, sep=";")
+        self.spec.columns = ["wavelength", "extra_terra", "global", "direct"]
+        self.spec = self.spec.set_index("wavelength")["global"]
+
     def interpolate(self, wavelengths):
+        """Interpolates the spectrum at the given wavelengths.
+
+        Args:
+            wavelengths (pd.Index): The wavelengths in nm to interpolate the spectrum at.
+
+        Returns:
+            spec_return (pd.Series): The interpolated spectrum as a function of wavelength in nm.
+        """
         spec_return = pd.Series(
             np.interp(wavelengths, self.spec.index, self.spec),
-            index = wavelengths
-            )
+            index=wavelengths,
+        )
         return spec_return
+
 
 class spectral_illumination(bi.YieldSimulator):
     def __init__(
@@ -355,13 +379,17 @@ class spectral_illumination(bi.YieldSimulator):
 
         def scale_irradiance(dni, dhi, factors):
             spec_irrad_dir = (
-                factors.loc[:, factors.columns.to_series().str.contains("direct")]
+                factors.loc[
+                    :, factors.columns.to_series().str.contains("direct")
+                ]
                 .sum(axis=1)
                 .values[:, None]
                 * dni
             )
             spec_irrad_diff = (
-                factors.loc[:, factors.columns.to_series().str.contains("diffuse")]
+                factors.loc[
+                    :, factors.columns.to_series().str.contains("diffuse")
+                ]
                 .sum(axis=1)
                 .values[:, None]
                 * dhi
@@ -372,7 +400,9 @@ class spectral_illumination(bi.YieldSimulator):
         factors_front = factors.loc[
             :, factors.columns.to_series().str.contains("front")
         ]
-        factors_back = factors.loc[:, factors.columns.to_series().str.contains("back")]
+        factors_back = factors.loc[
+            :, factors.columns.to_series().str.contains("back")
+        ]
 
         spec_irrad_inplane_front = scale_irradiance(
             self.spectral_irradiance["dni"],
