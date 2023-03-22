@@ -154,6 +154,24 @@ class OneDiodeModel:
         # V_mpp = V[np.arange(0,8760),P.argmax(axis=1)]
 
         return V
+    
+    def calc_iv_params(self, Jsc, cell_temp, j_arr=np.linspace(0,450,451)):
+        V = self.calc_iv(Jsc, cell_temp, j_arr)
+        P = V*j_arr
+        idx_mpp = np.nanargmax(P, axis=1)
+        Vmpp = V[np.arange(0,len(V)),idx_mpp]
+        Voc = V[:,0]
+        Pmax = np.nanmax(P, axis=1)
+        
+        Jsc = j_arr[(np.argmax((V<0), axis=1)-1).clip(min=0)]
+        
+        FF = abs(Pmax)/abs(Jsc*Voc)
+        
+        res = pd.DataFrame({'Voc':Voc, 'Vmpp':Vmpp, 'Pmax':Pmax, 'FF':FF,
+                            'Jsc':Jsc})
+        
+        return res
+        
 
 
 class TandemSimulator:
