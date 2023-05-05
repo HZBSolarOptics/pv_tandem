@@ -104,3 +104,11 @@ ENV/
 # IDE settings
 .vscode/
 .idea/
+# Pyre type checker
+.pyre/
+
+# manually added
+
+*.mat
+!optics_backside_illumination.mat
+graveyard
