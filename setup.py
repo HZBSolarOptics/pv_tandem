@@ -10,9 +10,19 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [ ]
+INSTALL_REQUIRES = ['pvlib >= 0.7.0']
 
-test_requirements = ['pytest>=3', ]
+TESTS_REQUIRE = ['pytest>=3',]
+EXTRAS_REQUIRE = {
+    'optional': ['netcdf4',],
+    'doc': ['ipython', 'matplotlib', 'sphinx == 4.5.0',
+            'pydata-sphinx-theme == 0.8.1', 'sphinx-gallery',
+            'docutils == 0.15.2'],
+    'test': TESTS_REQUIRE
+}
+EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
+
+
 
 setup(
     author="Peter Tillmann",
@@ -29,7 +39,9 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     description="Python toolbox for simulation and energy yield calculations of tandem solar cells.",
-    install_requires=requirements,
+      install_requires=INSTALL_REQUIRES,
+      extras_require=EXTRAS_REQUIRE,
+      tests_require=TESTS_REQUIRE,
     license="MIT license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
