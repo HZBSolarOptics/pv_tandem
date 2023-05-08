@@ -112,3 +112,5 @@ ENV/
 *.mat
 !optics_backside_illumination.mat
 graveyard
+docs/auto_examples
+pv_tandem/local_scripts.py
