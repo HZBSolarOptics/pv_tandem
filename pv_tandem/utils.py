@@ -90,9 +90,9 @@ def interp_eqe_to_spec(eqe: pd.DataFrame, spec: pd.DataFrame) -> pd.DataFrame:
             raise ValueError(
                 "It seems that either the wavelength of the spectral or eqe df are not numeric. Try to convert them to a numeric type, e.g.\ndf_spec.columns = df_spec.columns.astype(float)"
             )
-            
+
         else:
-            print('Failed raise')
+            print("Failed raise")
             raise v_error
 
 
@@ -116,9 +116,6 @@ from scipy import interpolate as interp
 
 if __name__ == "__main__":
 
-    
-    
-
     spec = pd.read_csv("./data/tiny_spec.csv", index_col=0)
     spec.columns = spec.columns.astype(float)
     eqe = pd.read_csv("./data/eqe_tandem_2t.csv", index_col=0)
@@ -138,13 +135,13 @@ if __name__ == "__main__":
         ],
         axis=1,
     )
-    
+
     import matplotlib.dates as mdates
     import matplotlib.pyplot as plt
-    
+
     ax = j_ph.plot()
-    ax.tick_params(axis='x', labelrotation=-45)
-    
-    #myFmt = mdates.DateFormatter('%Y-%m') # here you can format your datetick labels as desired
-    #ax.xaxis.set_major_formatter(myFmt)
+    ax.tick_params(axis="x", labelrotation=-45)
+
+    # myFmt = mdates.DateFormatter('%Y-%m') # here you can format your datetick labels as desired
+    # ax.xaxis.set_major_formatter(myFmt)
     plt.show()

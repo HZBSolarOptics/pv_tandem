@@ -2,8 +2,13 @@
 
 import numpy as np
 import pandas as pd
-from pv_tandem.utils import calc_temp_from_NOCT, calc_current, interp_eqe_to_spec
+from pv_tandem.utils import (
+    calc_temp_from_NOCT,
+    calc_current,
+    interp_eqe_to_spec,
+)
 from pv_tandem.electrical_models import OneDiodeModel
+
 
 class TandemSimulator:
     def __init__(
@@ -24,7 +29,7 @@ class TandemSimulator:
         self.eqe = eqe
         self.eqe_back = eqe_back
         self.bifacial = bifacial
-        
+
         self.Jsc = self.calculate_Jsc(min_Jsc_both_cells)
 
         self.electrical_models = {}
@@ -138,17 +143,18 @@ class TandemSimulator:
         P_max = pd.Series(P_max)
         return P_max
 
-if __name__ == '__main__':
-    
+
+if __name__ == "__main__":
+
     import matplotlib.pyplot as plt
-    
+
     spec = pd.read_csv("./data/tiny_spec.csv", index_col=0)
     spec.columns = spec.columns.astype(float)
-    spec = spec/1000
+    spec = spec / 1000
     eqe = pd.read_csv("./data/eqe_tandem_2t.csv", index_col=0)
 
     eqe_new = interp_eqe_to_spec(eqe, spec)
-    
+
     electrical_parameters = {
         "Rsh": {"pero": 1000, "si": 3000},
         "RsTandem": 3,
@@ -159,9 +165,14 @@ if __name__ == '__main__':
         "tcJsc": {"pero": 0.0002, "si": 0.00032},
         "tcVoc": {"pero": -0.002, "si": -0.0041},
     }
-    
-    tandem = TandemSimulator({'front': spec}, eqe_new, electrical_parameters, ['pero', 'si'], ambient_temp=25)
-    
+
+    tandem = TandemSimulator(
+        {"front": spec},
+        eqe_new,
+        electrical_parameters,
+        ["pero", "si"],
+        ambient_temp=25,
+    )
+
     power = tandem.calc_power()
     plt.plot(power)
-    
