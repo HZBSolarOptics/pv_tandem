@@ -1,5 +1,5 @@
 =========
-pv_tandem
+<img src="logo.png" width="600">
 =========
 
 
@@ -16,7 +16,7 @@ pv_tandem
 
 
 
-Python toolbox for simulation and energy yield calculations of tandem solar cells.
+PV Tandem is a python toolbox for simulation and energy yield calculations of single junction and tandem solar cells.
 
 
 * Free software: MIT license
