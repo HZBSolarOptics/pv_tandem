@@ -6,8 +6,8 @@ pv_tandem
 .. image:: https://img.shields.io/pypi/v/pv_tandem.svg
         :target: https://pypi.python.org/pypi/pv_tandem
 
-.. image:: https://img.shields.io/travis/P-tillmann/pv_tandem.svg
-        :target: https://travis-ci.com/P-tillmann/pv_tandem
+.. image:: https://img.shields.io/github/actions/workflow/status/nano-sippe/pv_tandem/pytest.yml
+        :target: https://github.com/nano-sippe/pv_tandem/actions/workflows/pytest.yml/badge.svg
 
 .. image:: https://readthedocs.org/projects/pv-tandem/badge/?version=latest
         :target: https://pv-tandem.readthedocs.io/en/latest/?version=latest
