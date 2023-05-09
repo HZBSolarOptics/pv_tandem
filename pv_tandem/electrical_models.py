@@ -1,16 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import scipy.io
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.special import lambertw
-from scipy import constants
-import pvlib
-import bifacial_illumination as bi
-import os
-
-# import cell_sim as cs
 
 
 class OneDiodeModel:
@@ -84,13 +76,13 @@ class OneDiodeModel:
         return np.real(V)
 
     def calc_iv_params(self, Jsc, cell_temp, j_arr=np.linspace(0, 45, 451)):
-        
-        if hasattr(Jsc, 'values'):
+
+        if hasattr(Jsc, "values"):
             Jsc = Jsc.values
-            
-        if hasattr(cell_temp, 'values'):
+
+        if hasattr(cell_temp, "values"):
             cell_temp = cell_temp.values
-        
+
         V = self.calc_iv(Jsc, cell_temp, j_arr)
         P = V * j_arr
         idx_mpp = np.nanargmax(P, axis=1)
