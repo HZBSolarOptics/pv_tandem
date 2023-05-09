@@ -17,7 +17,7 @@ EXTRAS_REQUIRE = {
     'optional': ['netcdf4',],
     'doc': ['ipython', 'matplotlib', 'sphinx == 4.5.0',
             'pydata-sphinx-theme == 0.8.1', 'sphinx-gallery',
-            'docutils == 0.15.2'],
+            'docutils == 0.15.2', 'seaborn'],
     'test': TESTS_REQUIRE
 }
 EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
