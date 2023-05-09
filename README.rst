@@ -1,5 +1,7 @@
 =========
-<img src="logo.png" width="600">
+.. image:: logo.png
+  :width: 600
+  :alt: logo
 =========
 
 
