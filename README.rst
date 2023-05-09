@@ -1,7 +1,3 @@
-=========
-Test
-=========
-
 .. image:: logo.png
   :width: 600
   :alt: logo
