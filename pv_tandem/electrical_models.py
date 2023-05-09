@@ -81,9 +81,16 @@ class OneDiodeModel:
             + (self.j0 / 1000 * self.R_shunt - Voc_rt + Voc)[:, None]
         )
 
-        return V
+        return np.real(V)
 
-    def calc_iv_params(self, Jsc, cell_temp, j_arr=np.linspace(0, 450, 451)):
+    def calc_iv_params(self, Jsc, cell_temp, j_arr=np.linspace(0, 45, 451)):
+        
+        if hasattr(Jsc, 'values'):
+            Jsc = Jsc.values
+            
+        if hasattr(cell_temp, 'values'):
+            cell_temp = cell_temp.values
+        
         V = self.calc_iv(Jsc, cell_temp, j_arr)
         P = V * j_arr
         idx_mpp = np.nanargmax(P, axis=1)
