@@ -148,10 +148,10 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
 
-    spec = pd.read_csv("./data/tiny_spec.csv", index_col=0)
+    spec = pd.read_csv("../examples/data/tiny_spec.csv", index_col=0)
     spec.columns = spec.columns.astype(float)
     spec = spec / 1000
-    eqe = pd.read_csv("./data/eqe_tandem_2t.csv", index_col=0)
+    eqe = pd.read_csv("../examples/data/eqe_tandem_2t.csv", index_col=0)
 
     eqe_new = interp_eqe_to_spec(eqe, spec)
 
