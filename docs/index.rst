@@ -11,7 +11,7 @@ Welcome to pv_tandem's documentation!
    installation
    usage
    auto_examples/index.rst
-   modules
+   api
    contributing
    authors
    history
