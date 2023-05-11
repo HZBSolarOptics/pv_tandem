@@ -1,6 +1,6 @@
 """
 Modeling Monofacial Tandem Solar Cell 
-============================
+=====================================
 Using spectral on-demand data from NREL and simulated EQE data from GENPRO4.
 """
 

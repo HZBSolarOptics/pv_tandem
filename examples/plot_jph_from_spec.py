@@ -2,7 +2,7 @@
 
 """
 Modeling Photocurrent Density for Tandem Solar Cells
-============================
+====================================================
 Using spectral on-demand data from NREL and simulated EQE data from GENPRO4.
 """
 
