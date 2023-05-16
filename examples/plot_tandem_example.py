@@ -18,11 +18,13 @@ Using spectral on-demand data from NREL and simulated EQE data from GENPRO4.
 
 # %%
 # First, we load the preprocessed spectral and meta-data (for temperature)
+# The spectral data has to be converted from W/µm/m2 to W/nm/m2 (by deviding by 1000)
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from pv_tandem import utils
+from pv_tandem import utils, solarcell_models
+import pvlib
 
 plt.rcParams['figure.dpi'] = 140
 
@@ -30,16 +32,12 @@ spec_irrad_ts = pd.read_csv(
     "./data/spec_poa_dallas_2020.csv", index_col=0, parse_dates=True
 )
 spec_irrad_ts.columns = spec_irrad_ts.columns.astype(float)
-spec_irrad_ts = spec_irrad_ts.clip(lower=0)
+spec_irrad_ts = spec_irrad_ts.clip(lower=0)/1000
 
 meta_ts = pd.read_csv(
     "./data/meta_ts_dallas_2020.csv", index_col=0, parse_dates=True
 )
 
-ax = meta_ts.groupby(meta_ts.index.dayofyear)["Temperature"].mean().plot()
-ax.set_xlabel("Day of year")
-ax.set_ylabel("Avg. daily temperature (°C)")
-plt.show()
 
 # %%
 # Note that the airmass and zenith values do not exactly match the values in
@@ -48,35 +46,58 @@ plt.show()
 # exactly match the one used here.  However, the differences are minor enough
 # to not materially change the spectra.
 
-example_eqe = pd.read_csv('./data/eqe_tandem_2t.csv', index_col=0)
-ax = (example_eqe*100).plot()
-ax.set_xlabel("Wavelength (nm)")
-ax.set_ylabel("Absorptance (%)")
-ax.legend(['Perovskite cell', 'Silicon cell'], loc='lower right')
-plt.show()
+eqe = pd.read_csv('./data/eqe_tandem_2t.csv', index_col=0)
 
-eqe = utils.interp_eqe_to_spec(example_eqe, spec_irrad_ts)
-eqe.plot()
+eqe = utils.interp_eqe_to_spec(eqe, spec_irrad_ts)
 
-j_ph = pd.concat(
-    [
-        utils.calc_current(spec_irrad_ts / 1000, eqe["pero"]),
-        utils.calc_current(spec_irrad_ts / 1000, eqe["si"]),
-    ],
-    axis=1,
+electrical_parameters = {
+    "Rsh": {"pero": 1000, "si": 3000},
+    "RsTandem": 3,
+    "j0": {"pero": 2.7e-18, "si": 1e-12},
+    "n": {"pero": 1.1, "si": 1},
+    "Temp": {"pero": 25, "si": 25},
+    "noct": {"pero": 48, "si": 48},
+    "tcJsc": {"pero": 0.0002, "si": 0.00032},
+    "tcVoc": {"pero": -0.002, "si": -0.0041},
+}
+
+temperature = pvlib.temperature.noct_sam(spec_irrad_ts.sum(axis=1)*1.15,
+                                         meta_ts['Temperature'],
+                                         meta_ts['Wind Speed'],
+                                         noct=45,
+                                         module_efficiency=0.25)
+temperature = pd.Series(temperature).rename('pero').to_frame()
+temperature['si'] = temperature['pero']
+
+tandem = solarcell_models.TandemSimulator(
+    {"front": spec_irrad_ts},
+    eqe,
+    electrical_parameters,
+    ["pero", "si"],
+    ambient_temp=25,
+    cell_temps=temperature
 )
 
-ax = (j_ph.groupby(j_ph.index.dayofyear).sum()*3.6/1000).plot()
-ax.set_xlabel("Day of year")
-ax.set_ylabel("Daily generated Charge (MC/day)")
-ax.legend(['Perovskite cell', 'Silicon cell'], loc='upper right')
+iv_stc = tandem.calc_IV_stc()
+
+fig, ax = plt.subplots()
+
+for subcell, iv in iv_stc.items():
+    iv = iv[(iv>0).shift(1, fill_value=True)]
+    iv = iv.reset_index().set_index(subcell)
+    iv.plot(ax=ax)
+
+ax.legend(['Tandem', 'Perovskite', 'Silicon'])
+ax.set_xlabel('Voltage (V)')
+ax.set_ylabel('Current density (mA/cm2)')
 plt.show()
 
+power = tandem.calc_power()
+power.index = spec_irrad_ts.index
 
+ax = (power.groupby(power.index.dayofyear).sum() * 10 / 1000).plot()
+ax.set_xlabel('Day of year')
+ax.set_ylabel('Daily yield (kWh/m2)')
+
+print(f"Yearly yield: {(power * 10 /1000).sum():.1f} kWh/m2")
 # %%
-# Note that the airmass and zenith values do not exactly match the values in
-# the technical report; this is because airmass is estimated from solar
-# position and the solar position calculation in the technical report does not
-# exactly match the one used here.  However, the differences are minor enough
-# to not materially change the spectra.
-

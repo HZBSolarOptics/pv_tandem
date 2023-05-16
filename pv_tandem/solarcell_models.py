@@ -9,6 +9,7 @@ from pv_tandem.utils import (
 )
 from pv_tandem.electrical_models import OneDiodeModel
 
+from pv_tandem import electrical_models, irradiance_models, utils
 
 class TandemSimulator:
     def __init__(
@@ -17,8 +18,9 @@ class TandemSimulator:
         eqe,
         electrical_parameters,
         subcell_names,
-        ambient_temp,
-        temp_model="noct",
+        ambient_temp=None,
+        cell_temps=None,
+        temp_model=None,
         min_Jsc_both_cells=False,
         eqe_back=None,
         bifacial=False,
@@ -34,21 +36,24 @@ class TandemSimulator:
 
         self.electrical_models = {}
         self.j_arr = np.linspace(0, 45, 451)
-        if temp_model is None:
-            self.cell_temps = {
-                subcell: pd.Series(25) for subcell in subcell_names
-            }
+        if cell_temps is None:
+            if temp_model is None:
+                self.cell_temps = {
+                    subcell: pd.Series(25) for subcell in subcell_names
+                }
+            else:
+                self.cell_temps = {
+                    subcell: calc_temp_from_NOCT(
+                        self.electrics["noct"][subcell],
+                        ambient_temp,
+                        spec_irrad["front"].values.sum(axis=-1),
+                    )
+                    # correction for limited range of spectrum (onyl until 1200 nm)
+                    * 1.15
+                    for subcell in subcell_names
+                }
         else:
-            self.cell_temps = {
-                subcell: calc_temp_from_NOCT(
-                    self.electrics["noct"][subcell],
-                    ambient_temp,
-                    spec_irrad["front"].values.sum(axis=-1),
-                )
-                # correction for limited range of spectrum (onyl until 1200 nm)
-                * 1.15
-                for subcell in subcell_names
-            }
+            self.cell_temps = cell_temps
 
         for subcell in subcell_names:
             self.electrical_models[subcell] = OneDiodeModel(
@@ -100,7 +105,7 @@ class TandemSimulator:
                 pd.DataFrame(
                     self.electrical_models[subcell].calc_iv(
                         Jsc[subcell].values,
-                        self.cell_temps[subcell],
+                        self.cell_temps[subcell].values,
                         self.j_arr,
                     )
                 )
@@ -129,7 +134,7 @@ class TandemSimulator:
                 pd.DataFrame(
                     self.electrical_models[subcell].calc_iv(
                         self.Jsc[subcell].values,
-                        self.cell_temps[subcell],
+                        self.cell_temps[subcell].values,
                         self.j_arr,
                     )
                 )
@@ -142,6 +147,35 @@ class TandemSimulator:
         P_max = P.max(axis=1)
         P_max = pd.Series(P_max)
         return P_max
+    
+    def calc_IV_stc(self):
+        
+        j_ph_stc = irradiance_models.AM15g().calc_jph(self.eqe) / 10
+        
+        V = []
+
+        for subcell in self.subcell_names:
+            V.append(
+                pd.DataFrame(
+                    self.electrical_models[subcell].calc_iv(
+                        np.array([j_ph_stc[subcell]]),
+                        25,
+                        self.j_arr,
+                    )
+                )
+            )
+            
+        V_tandem = pd.concat(V, axis=1, keys=self.subcell_names)
+        V_tandem = V_tandem.stack().reset_index(drop=True).astype(float)
+        V_tandem[V_tandem<0] = np.nan
+        
+        iv = pd.Series(V_tandem.values.sum(axis=1)).rename('tandem').to_frame()
+        iv = pd.concat([iv, V_tandem], axis=1)
+        
+        iv[iv.isna()] = 0
+        iv.index = self.j_arr
+        
+        return iv
 
 
 if __name__ == "__main__":
