@@ -34,6 +34,7 @@ import warnings
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
+    "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
     "sphinx_gallery.gen_gallery",
@@ -47,6 +48,10 @@ autosummary_generate = True
 sphinx_gallery_conf = {
      'examples_dirs': '../examples',   # path to your example scripts
      'gallery_dirs': 'auto_examples',  # path to where to save gallery generated output
+     'reference_url': {
+         # The module you locally document uses None
+        'sphinx_gallery': None,
+    }
 }
 
 

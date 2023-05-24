@@ -7,3 +7,8 @@ API
    :members:
    :undoc-members:
    :show-inheritance:
+   
+.. automodule:: pv_tandem.solarcell_models
+   :members:
+   :undoc-members:
+   :show-inheritance:
