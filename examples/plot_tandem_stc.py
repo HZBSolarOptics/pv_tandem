@@ -1,7 +1,7 @@
 """
-Modeling Monofacial Tandem Solar Cell 
-=====================================
-Using spectral on-demand data from NREL and simulated EQE data from GENPRO4.
+Tandem Solar Cell under STC
+===========================
+Simulating the IV curve of a Tandem Solar Cell with a 1-Diode model.
 """
 
 # %%
@@ -28,15 +28,7 @@ import pvlib
 
 plt.rcParams['figure.dpi'] = 140
 
-spec_irrad_ts = pd.read_csv(
-    "./data/spec_poa_dallas_2020.csv", index_col=0, parse_dates=True
-)
-spec_irrad_ts.columns = spec_irrad_ts.columns.astype(float)
-spec_irrad_ts = spec_irrad_ts.clip(lower=0)/1000
-
-meta_ts = pd.read_csv(
-    "./data/meta_ts_dallas_2020.csv", index_col=0, parse_dates=True
-)
+eqe = pd.read_csv('./data/eqe_tandem_2t.csv', index_col=0)
 
 
 # %%
@@ -46,12 +38,10 @@ meta_ts = pd.read_csv(
 # exactly match the one used here.  However, the differences are minor enough
 # to not materially change the spectra.
 
-eqe = pd.read_csv('./data/eqe_tandem_2t.csv', index_col=0)
 
-eqe = utils.interp_eqe_to_spec(eqe, spec_irrad_ts)
 
 electrical_parameters = {
-    "Rsh": {"pero": 1000, "si": 3000},
+    "Rsh": {"pero": 2000, "si": 3000},
     "RsTandem": 3,
     "j0": {"pero": 2.7e-18, "si": 1e-12},
     "n": {"pero": 1.1, "si": 1},
@@ -61,21 +51,10 @@ electrical_parameters = {
     "tcVoc": {"pero": -0.002, "si": -0.0041},
 }
 
-temperature = pvlib.temperature.noct_sam(spec_irrad_ts.sum(axis=1)*1.15,
-                                         meta_ts['Temperature'],
-                                         meta_ts['Wind Speed'],
-                                         noct=45,
-                                         module_efficiency=0.25)
-temperature = pd.Series(temperature).rename('pero').to_frame()
-temperature['si'] = temperature['pero']
-
-tandem = solarcell_models.TandemSimulator(
-    {"front": spec_irrad_ts},
-    eqe,
-    electrical_parameters,
-    ["pero", "si"],
-    ambient_temp=25,
-    cell_temps=temperature
+tandem = tandem = solarcell_models.TandemSimulator(
+    eqe=eqe,
+    electrical_parameters=electrical_parameters,
+    subcell_names=["pero", "si"],
 )
 
 iv_stc = tandem.calc_IV_stc()
@@ -87,17 +66,9 @@ for subcell, iv in iv_stc.items():
     iv = iv.reset_index().set_index(subcell)
     iv.plot(ax=ax)
 
-ax.legend(['Tandem', 'Perovskite', 'Silicon'])
+ax.legend(['Perovskite', 'Silicon', 'Tandem'])
 ax.set_xlabel('Voltage (V)')
 ax.set_ylabel('Current density (mA/cm2)')
+ax.set_xlim(0)
+ax.set_ylim(0)
 plt.show()
-
-power = tandem.calc_power()
-power.index = spec_irrad_ts.index
-
-ax = (power.groupby(power.index.dayofyear).sum() * 10 / 1000).plot()
-ax.set_xlabel('Day of year')
-ax.set_ylabel('Daily yield (kWh/m2)')
-
-print(f"Yearly yield: {(power * 10 /1000).sum():.1f} kWh/m2")
-# %%
