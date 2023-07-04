@@ -216,7 +216,7 @@ class TandemSimulator:
             return V_tandem
 
     def calc_power(
-        self, spec_irrad: pd.DataFrame, cell_temps: pd.DataFrame
+        self, spec_irrad: pd.DataFrame, cell_temps: pd.DataFrame, backside_current: Optional[pd.DataFrame] = None
     ) -> pd.Series:
         """
         Calculates the maximum power output density from timeseries of impinging spectrum
@@ -232,6 +232,10 @@ class TandemSimulator:
         cell_temps : pandas.Dataframe
              Time series of the cell temperatures. The columns of the dataframe
              expected to be named like the subcell_names.
+             
+        backside_current : pandas.Dataframe
+             Manual backside current contribution (in mA/cm2) for bifacial tandem.
+             The DataFrame needs to contain a column for each subcell in the tandem.
 
         Returns
         -------
@@ -247,6 +251,9 @@ class TandemSimulator:
             Jsc = self.calculate_Jsc(spec_irrad["front"], spec_irrad["back"])
         else:
             Jsc = self.calculate_Jsc(spec_irrad)
+            
+        if backside_current is not None:
+            Jsc = Jsc + backside_current
 
         V_tandem = self.calc_IV(Jsc, cell_temps)
 
@@ -255,11 +262,16 @@ class TandemSimulator:
         P_max = pd.Series(P_max, index=spec_irrad.index)
         return P_max
 
-    def calc_IV_stc(self):
+    def calc_IV_stc(self, backside_current=None):
         """
         Calculates the voltage for the IV curve of the tandem solar cell under
         standart test conditions at the respective current density defined by
         j_arr.
+        
+        Parameters
+        ----------
+        backside_current : dict
+             Manual backside current contribution (in mA/cm2) for bifacial tandem.
 
         Returns
         -------
@@ -304,6 +316,9 @@ class TandemSimulator:
 
         j_ph_stc = irradiance_models.AM15g().calc_jph(self.eqe) / 10
 
+        if backside_current is not None:
+            j_ph_stc = j_ph_stc + backside_current
+
         V = []
 
         for subcell in self.subcell_names:
@@ -322,6 +337,7 @@ class TandemSimulator:
 
         V_tandem["tandem"] = V_tandem.sum(axis=1)
         V_tandem.index = self.j_arr
+        V_tandem.index = V_tandem.index.rename('current')
 
         return V_tandem
 
