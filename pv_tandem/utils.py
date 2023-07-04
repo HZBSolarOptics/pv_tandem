@@ -3,6 +3,7 @@
 import pandas as pd
 import numpy as np
 from scipy import constants
+from scipy import interpolate as interp
 
 
 def calc_current(spec: pd.DataFrame, eqe: pd.DataFrame) -> np.ndarray:
@@ -88,7 +89,9 @@ def interp_eqe_to_spec(eqe: pd.DataFrame, spec: pd.DataFrame) -> pd.DataFrame:
     except ValueError as v_error:
         if str(v_error) == "object arrays are not supported":
             raise ValueError(
-                "It seems that either the wavelength of the spectral or eqe df are not numeric. Try to convert them to a numeric type, e.g.\ndf_spec.columns = df_spec.columns.astype(float)"
+                """It seems that either the wavelength of the spectral or eqe df
+                are not numeric. Try to convert them to a numeric type,
+                e.g.\ndf_spec.columns = df_spec.columns.astype(float)"""
             )
 
         else:
@@ -106,16 +109,46 @@ def interp_spec_to_eqe(eqe: pd.DataFrame, spec: pd.DataFrame) -> pd.DataFrame:
     except ValueError as v_error:
         if str(v_error) == "object arrays are not supported":
             print(
-                "It seems that either the wavelength of the spectral or eqe df are not numeric. Try to convert them to a numeric type, e.g.\ndf_spec.columns = df_spec.columns.astype(float)"
+                """It seems that either the wavelength of the spectral or eqe df
+                are not numeric. Try to convert them to a numeric type,
+                e.g.\ndf_spec.columns = df_spec.columns.astype(float)"""
             )
         else:
             raise v_error
 
 
-from scipy import interpolate as interp
+def calc_j0_RT(
+    eqe, bandgap_shift=None, lqe_ele=0.01
+):  # use wl on the x-axis
+    """
+    Function to calculate J0 for the detailed balance limit at room temperature.
+    E_bg: Bandgap of model materials
+    lqe_eqe: Electroluminescent emission efficiency. For Shockley–Queisser equals 1.
+
+    return: J0 (dark current) (mA/cm²)
+    """
+    # E_ev = np.linspace(E_bg,10,1000)
+    # t = time.process_time()
+    bbr = lambda wl, T: np.divide(
+        (2 * constants.c / wl**4),
+        (np.exp(constants.h * constants.c / (wl * constants.k * T) - 1.0)),
+    )  # original
+
+    if bandgap_shift is not None:
+        eqe_wl_array = np.multiply.outer(eqe.index, bandgap_shift)
+    else:
+        eqe_wl_array = eqe.index
+
+    product = eqe.values.flatten() * bbr(eqe_wl_array * 1e-9, 300).T
+    integral = np.trapz(y=product, x=eqe_wl_array.T * 1e-9)
+
+    j0 = (
+        integral * 2 * np.pi * constants.e / lqe_ele * 0.1
+    )  # Factor 0.1 for conversion from A/m² to mA/cm²!
+    return j0
+
 
 if __name__ == "__main__":
-
     spec = pd.read_csv("./data/tiny_spec.csv", index_col=0)
     spec.columns = spec.columns.astype(float)
     eqe = pd.read_csv("./data/eqe_tandem_2t.csv", index_col=0)
