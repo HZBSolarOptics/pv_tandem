@@ -1,9 +1,19 @@
-# -*- coding: utf-8 -*-
 """
-Created on Fri Jun 23 08:35:53 2023
+Bifacial Irradiance Yield
+=========================
+Demonstrating the irradiance calculation on the front and backside over one year.
+"""
 
-@author: Peter
-"""
+# sphinx_gallery_thumbnail_number = 2
+
+# %%
+# This example shows how to model the irradiance on the front and backside if a
+# bifacial solar cell. It uses the irradiance data for the direct and diffuse
+# components from Dallas for the year 2020.
+# 
+# First the relevant libraries are loaded and the solar potion is calculated with the
+# python library pvlib
+
 
 from pv_tandem import bif_yield
 import matplotlib.pyplot as plt
@@ -34,10 +44,10 @@ simulator = bif_yield.IrradianceSimulator(illumination_df,
 
 irrad_poa = simulator.simulate(spacing=6, tilt=25, simple_results=True)
 
-irrad_poa.groupby(irrad_poa.index.dayofyear).sum().plot()
-plt.show()
-
-irrad_poa.eval('front/back').groupby(irrad_poa.index.dayofyear).mean().plot()
+fig, ax = plt.subplots(dpi=150)
+(irrad_poa.groupby(irrad_poa.index.dayofyear).sum()/1000).plot(ax=ax)
+ax.set_xlabel('Day of the year')
+ax.set_ylabel('Daily irradiance (kWh/m2)')
 plt.show()
 
 tilt_angles = np.arange(10,54,4)
@@ -59,4 +69,20 @@ for tilt_angle in tilt_angles:
 scan_res = pd.concat(scan_res, axis=1).T
 scan_res = scan_res.set_index(['tilt', 'spacing'], drop=True)
 
-sns.heatmap(scan_res['total'].unstack('spacing').sort_index(ascending=False))
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, dpi=150, figsize=(8,2.5), sharey=True)
+
+sns.heatmap(scan_res['front'].unstack('spacing').sort_index(ascending=False), ax=ax1, cbar_ax=None)
+sns.heatmap(scan_res['back'].unstack('spacing').sort_index(ascending=False), ax=ax2, cbar_ax=None)
+sns.heatmap(scan_res['total'].unstack('spacing').sort_index(ascending=False), ax=ax3)
+
+ax1.set_title("Front")
+ax2.set_title("Back")
+ax3.set_title("Combined")
+ax1.set_xlabel('Module spacing (m)')
+ax2.set_xlabel('Module spacing (m)')
+ax3.set_xlabel('Module spacing (m)')
+ax1.set_ylabel('Tile angle (deg)')
+ax2.set_ylabel("",visible=False)
+ax3.set_ylabel("",visible=False)
+
+fig.tight_layout()
