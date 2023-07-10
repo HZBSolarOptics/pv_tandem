@@ -34,12 +34,13 @@ import warnings
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-    "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
-    "sphinx_gallery.gen_gallery",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.extlinks",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
+    "sphinx_gallery.gen_gallery",
 ]
 
 autosummary_generate = True
@@ -158,6 +159,9 @@ latex_documents = [
     ),
 ]
 
+extlinks = {
+    'doi': ('http://dx.doi.org/%s', 'DOI: %s'),
+}
 
 # -- Options for manual page output ------------------------------------
 
