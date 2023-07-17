@@ -12,8 +12,8 @@ Simulating the IV curve of a Tandem Solar Cell with a 1-Diode model.
 # Reference
 # ----------
 # .. [1] P. Tillmann, K. Jäger, A. Karsenti, L. Kreinin, C. Becker (2022)
-#    “Model-Chain Validation for Estimating the Energy Yield of Bifacial 
-#    Perovskite/Silicon Tandem Solar Cells,” Solar RRL 2200079, 
+#    “Model-Chain Validation for Estimating the Energy Yield of Bifacial
+#    Perovskite/Silicon Tandem Solar Cells,” Solar RRL 2200079,
 #    DOI: 10.1002/solr.202200079
 
 # %%
@@ -26,9 +26,9 @@ import matplotlib.pyplot as plt
 from pv_tandem import utils, solarcell_models
 import pvlib
 
-plt.rcParams['figure.dpi'] = 140
+plt.rcParams["figure.dpi"] = 140
 
-eqe = pd.read_csv('./data/eqe_tandem_2t.csv', index_col=0)
+eqe = pd.read_csv("./data/eqe_tandem_2t.csv", index_col=0)
 
 
 # %%
@@ -39,10 +39,9 @@ eqe = pd.read_csv('./data/eqe_tandem_2t.csv', index_col=0)
 # to not materially change the spectra.
 
 
-
 electrical_parameters = {
-    "Rsh": {"pero": 2000, "si": 3000},
-    "RsTandem": 3,
+    "Rsh": {"pero": 2000, "si": 5000},
+    "Rs": {"pero":6, "si":2},
     "j0": {"pero": 2.7e-18, "si": 1e-12},
     "n": {"pero": 1.1, "si": 1},
     "Temp": {"pero": 25, "si": 25},
@@ -51,7 +50,7 @@ electrical_parameters = {
     "tcVoc": {"pero": -0.002, "si": -0.0041},
 }
 
-tandem = tandem = solarcell_models.TandemSimulator(
+tandem = solarcell_models.TandemSimulator4T(
     eqe=eqe,
     electrical_parameters=electrical_parameters,
     subcell_names=["pero", "si"],
@@ -62,13 +61,13 @@ iv_stc = tandem.calc_IV_stc()
 fig, ax = plt.subplots()
 
 for subcell, iv in iv_stc.items():
-    iv = iv[(iv>0).shift(1, fill_value=True)]
+    iv = iv[(iv > 0).shift(1, fill_value=True)]
     iv = iv.reset_index().set_index(subcell)
     iv.plot(ax=ax)
 
-ax.legend(['Perovskite', 'Silicon', 'Tandem'])
-ax.set_xlabel('Voltage (V)')
-ax.set_ylabel('Current density (mA/cm2)')
+ax.legend(["Perovskite", "Silicon"])
+ax.set_xlabel("Voltage (V)")
+ax.set_ylabel("Current density (mA/cm2)")
 ax.set_xlim(0)
 ax.set_ylim(0)
 plt.show()
