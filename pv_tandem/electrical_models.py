@@ -30,20 +30,24 @@ class OneDiodeModel:
         else:
             self.j0 = np.array([j0])
 
+    #@profile
     def calc_iv(self, Jsc, cell_temp, j_arr):
         def lambertw_exp_large(x):
             result = x - np.log(x) + np.log(x) / x
             return result
-
+        
         def lambertwlog(x):
-            large_x = x.copy()
-            large_x_mask = x > 20
-            small_x = lambertw(np.exp(np.clip(x, a_min=None, a_max=20)))
-            large_x = lambertw_exp_large(x)
+            res = np.zeros_like(x)
+            large_x_mask = x > 10
+            small_x = lambertw(np.exp(x[~large_x_mask]), tol=1e-8)
+            large_x = lambertw_exp_large(x[large_x_mask])
 
-            x = np.where(large_x_mask, large_x, small_x)
+            #x = np.where(large_x_mask, large_x, small_x)
+            
+            res[~large_x_mask] = small_x
+            res[large_x_mask] = large_x
 
-            return x
+            return res
 
         # Thermal voltage at room temperature in V
         Vth = 0.02569
