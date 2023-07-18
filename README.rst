@@ -15,17 +15,34 @@
 
 
 
-PV Tandem is a python toolbox for simulation and energy yield calculations of single junction and tandem solar cells.
-
+pv_tandem is a python toolbox for simulation and energy yield calculations of single junction and tandem solar cells with classical (monofacial) or bifacial illumination.
 
 * Free software: MIT license
 * Documentation: https://pv-tandem.readthedocs.io.
 
-
 Features
 --------
 
-* TODO
+* Helping tools to process irradiance data for solar cell simulations
+* Electrical modeling with 1-diode model for single junction or tandem solar cells
+* Modeling of illumination in a large PV power plant for the front- and backside of the modules
+
+Where to get it
+---------------
+
+The source code is hosted at GitHub at: https://github.com/nano-sippe/pv_tandem
+
+To install pv_tandem clone the project from github:
+
+.. code-block:: bash
+
+    git clone https://github.com/nano-sippe/pv_tandem
+
+Then change into the pv_tandem folder and install with pip
+
+.. code-block:: bash
+
+    pip install .
 
 Credits
 -------

@@ -10,6 +10,7 @@ Welcome to pv_tandem's documentation!
    readme
    installation
    usage
+   model_basics
    auto_examples/index.rst
    api
    contributing

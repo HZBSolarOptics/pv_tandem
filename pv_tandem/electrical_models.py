@@ -6,9 +6,35 @@ from scipy.special import lambertw
 
 
 class OneDiodeModel:
-    def __init__(self, tcJsc, tcVoc, R_shunt, R_series, n, j0):
+    """
+    A class to calculate the performance of a solar cell with a one diode model.
+
+    Parameters
+    ----------
+    tcJsc : float or np.ndarray
+        The temperature coefficient of the short-circuit current.
+    tcVoc : float or np.ndarray
+        The temperature coefficient of the open-circuit voltage.
+    R_shunt : float or np.ndarray
+        The shunt resistance.
+    R_series : float or np.ndarray
+        The series resistance.
+    n : float or np.ndarray
+        The diode ideality factor.
+    j0 : float or np.ndarray
+        The reverse saturation current.
+
+    Returns
+    -------
+    None
+
+    """
+    def __init__(self, tcJsc, tcVoc, R_shunt, R_series, n, j0):       
         self.tcJsc = tcJsc
         self.tcVoc = tcVoc
+        
+        # severeal parameters are converted to 1d arrays if are initilized to a
+        # scalar, in order to ensure that broadcasting works in the IV functions
 
         if type(R_shunt) == np.ndarray:
             self.R_shunt = R_shunt
@@ -204,3 +230,4 @@ if __name__ == "__main__":
     ax.set_xlabel("Light intensity (% of AM1.5g)")
 
     plt.show()
+    
