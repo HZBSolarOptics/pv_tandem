@@ -65,7 +65,7 @@ class OneDiodeModel:
         def lambertwlog(x):
             res = np.zeros_like(x)
             large_x_mask = x > 10
-            small_x = lambertw(np.exp(x[~large_x_mask]), tol=1e-8)
+            small_x = np.real(lambertw(np.exp(x[~large_x_mask]), tol=1e-8))
             large_x = lambertw_exp_large(x[large_x_mask])
 
             #x = np.where(large_x_mask, large_x, small_x)
