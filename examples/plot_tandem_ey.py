@@ -70,7 +70,7 @@ temperature = pvlib.temperature.noct_sam(spec_irrad_ts.sum(axis=1)*1.15,
 temperature = pd.DataFrame({'pero':temperature,
                             'si':temperature})
 
-tandem = solarcell_models.TandemSimulator(
+tandem = solarcell_models.TandemSimulator2T(
     eqe=eqe,
     electrical_parameters=electrical_parameters,
     subcell_names=["pero", "si"],
