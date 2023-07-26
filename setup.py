@@ -49,7 +49,7 @@ setup(
     name='pv_tandem',
     packages=find_packages(include=['pv_tandem', 'pv_tandem.*']),
     test_suite='tests',
-    url='https://github.com/P-tillmann/pv_tandem',
+    url='https://github.com/nano-sippe/pv_tandem',
     version='0.1.0',
     zip_safe=False,
 )
