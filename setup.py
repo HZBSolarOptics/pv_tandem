@@ -29,7 +29,7 @@ setup(
     author_email='Peter.tillmann@helmholtz-berlin.de',
     python_requires='>=3.6',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
@@ -50,7 +50,7 @@ setup(
     packages=find_packages(include=['pv_tandem', 'pv_tandem.*']),
     package_data={'pv_tandem': ['data/*.csv']},
     test_suite='tests',
-    url='https://github.com/P-tillmann/pv_tandem',
+    url='https://github.com/nano-sippe/pv_tandem',
     version='0.1.0',
     zip_safe=False,
 )
