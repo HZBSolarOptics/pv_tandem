@@ -10,7 +10,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-INSTALL_REQUIRES = ['pvlib >= 0.7.0']
+INSTALL_REQUIRES = ['pvlib >= 0.7.0', 'numpy', 'pandas', 'scipy']
 
 TESTS_REQUIRE = ['pytest>=3',]
 EXTRAS_REQUIRE = {
@@ -48,6 +48,7 @@ setup(
     keywords='pv_tandem',
     name='pv_tandem',
     packages=find_packages(include=['pv_tandem', 'pv_tandem.*']),
+    package_data={'pv_tandem': ['data/*.csv']},
     test_suite='tests',
     url='https://github.com/P-tillmann/pv_tandem',
     version='0.1.0',
