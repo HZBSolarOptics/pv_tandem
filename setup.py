@@ -51,6 +51,6 @@ setup(
     package_data={'pv_tandem': ['data/*.csv']},
     test_suite='tests',
     url='https://github.com/nano-sippe/pv_tandem',
-    version='0.1.0',
+    version='0.1.1',
     zip_safe=False,
 )

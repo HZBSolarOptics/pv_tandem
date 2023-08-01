@@ -8,5 +8,5 @@ from pv_tandem import bifacial_yield as bif_yield
 
 __author__ = """Peter Tillmann"""
 __email__ = 'Peter.tillmann@helmholtz-berlin.de'
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
