@@ -20,7 +20,12 @@ To install pv_tandem, run this command in your terminal:
 
     $ pip install pv_tandem
 
+Basic Usage
+___________
 
-To use pv_tandem in a project::
+The basic requirement to simulate any solar cell with pv_tandem is to define the one-diode model with corespodning parameters, the absorbed photocurrent (Jsc) and the cell temperture:
 
-    import pv_tandem
+.. plot:: pyplots/one-diode.py
+   :include-source:
+
+You can find many examples in the :ref:`gallery` that show how to simulate different types of solar cells and tandem with bifacial or monofacial illumination.
