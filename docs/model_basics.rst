@@ -29,7 +29,7 @@ with e as elementary charge and E as spectral irradiance.
 
 One of the most accessable data sources for spectral irradiance is the `National Solar Radiation Database (NSRDB) <https://nsrdb.nrel.gov/>`_ provided by National Renewable Energy Laboratory (NREL), a US govermental organization. With their dataproduct `"spectral on-demand" <https://nsrdb.nrel.gov/data-sets/spectral-on-demand-data>`_ year-wise data can be downloaded on a plane defined by a tilt angle. The disadvantage of the dataset is the missing components of direct and diffuse spectral irradiance, which makes it hard to combine with pv_tandem's bifacial illumination model.
 
-For examples of how to use pv_tandem to calculate the photocurrent density, see the gallery :ref:`sphx_glr_auto_examples_plot_jph_from_spec.py`.
+For examples of how to use pv_tandem to calculate the photocurrent density, see the gallery :ref:`sphx_glr_auto_examples_basics_plot_jph_from_spec.py`.
 
 While spectral effects can have a significant impact on the performance of tandem solar cells (due to current matching constrains), silicon single junction cells are less effected. Additionaly, non-spectral irradiance data and short circuit current ratings for standart test conditions are much more available then EQE and spectral irradiance data.
 
@@ -47,7 +47,7 @@ As shown in fig. :numref:`irrad_jsc` it can therefore be sensible to calculate t
     
     J_\text{ph} = \frac{E}{1000 W/m²} \cdot J_\text{STC}
 
-with E as the irradiance on the module. This method ist used in the examples :ref:`sphx_glr_auto_examples_plot_jph_from_spec.py`
+with E as the irradiance on the module. This method ist used in the examples :ref:`sphx_glr_auto_examples_energy_yield_plot_silicon_ey.py`
 
 Cell temperature
 ________________
