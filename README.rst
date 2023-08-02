@@ -30,9 +30,21 @@ Features
 Where to get it
 ---------------
 
-The source code is hosted at GitHub at: https://github.com/nano-sippe/pv_tandem
+pv_tandem can easily be installed with pip:
 
-To install pv_tandem clone the project from github:
+.. code-block:: bash
+
+    pip install pv_tandem
+
+If you want to be able to directly run the examples you can install pv_tandems together with all nessesary libraries with
+
+.. code-block:: bash
+
+    pip install pv_tandem[doc]
+
+The source code is hosted at GitHub at: https://github.com/HZBSolarOptics/pv_tandem
+
+If you want to install from source clone the project from github:
 
 .. code-block:: bash
 
