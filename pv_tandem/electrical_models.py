@@ -128,12 +128,19 @@ class OneDiodeModel:
                 - (self.n * Vth)[:, None] * lambertwlog((lambw))
                 + (self.j0 / 1000 * self.R_shunt - Voc_rt + Voc)[:, None]
             )
-
-        return np.real(V)
+            
+        if hasattr(Jsc, "__len__"):
+            return np.real(V)
+        else:
+            return np.real(V)[0]
+            
 
     def calc_iv_params(self, Jsc, cell_temp, j_arr=np.linspace(0, 45, 451)):
 
+        index = None        
+
         if hasattr(Jsc, "values"):
+            index = Jsc.index
             Jsc = Jsc.values
 
         if hasattr(cell_temp, "values"):
@@ -161,6 +168,11 @@ class OneDiodeModel:
                 "Jmpp": Jmpp,
             }
         )
+        
+        # set index from Jsc if it was a pd.series
+        
+        if index is not None:
+            res.index = index
 
         return res
 
