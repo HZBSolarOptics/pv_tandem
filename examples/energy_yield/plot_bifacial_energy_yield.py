@@ -35,18 +35,18 @@ import pandas as pd
 import seaborn as sns
 
 spec_irrad_ts = pd.read_csv(
-    "./data/spec_poa_dallas_2020.csv", index_col=0, parse_dates=True
+    "../data/spec_poa_dallas_2020.csv", index_col=0, parse_dates=True
 )
 
 spec_irrad_ts.columns = spec_irrad_ts.columns.astype(float)
 # converting spectral data from W/µ/m² to W/nm/m²
 spec_irrad_ts = spec_irrad_ts.clip(lower=0) / 1000
 
-eqe = pd.read_csv("./data/eqe_tandem_2t.csv", index_col=0)
+eqe = pd.read_csv("../data/eqe_tandem_2t.csv", index_col=0)
 eqe = utils.interp_eqe_to_spec(eqe, spec_irrad_ts)
 
 meta_ts = pd.read_csv(
-    "./data/meta_ts_dallas_2020.csv", index_col=0, parse_dates=True
+    "../data/meta_ts_dallas_2020.csv", index_col=0, parse_dates=True
 )
 
 coord_dallas = dict(latitude=32.8, longitude=-96.8)
@@ -127,7 +127,7 @@ P_max = pd.Series(P_max, index=spec_irrad_ts.index)
 # A dataset with simulated eqe data for several different perovskite bandgaps is
 # loaded to scan the energy yield for the optimal bandgap
 
-eqe_all_bgs = pd.read_csv("./data/eqe_tandem_all_bgs.csv")
+eqe_all_bgs = pd.read_csv("../data/eqe_tandem_all_bgs.csv")
 
 P_stc = []
 energy_yield_bif = []

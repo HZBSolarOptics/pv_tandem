@@ -29,13 +29,13 @@ import pvlib
 plt.rcParams['figure.dpi'] = 140
 
 spec_irrad_ts = pd.read_csv(
-    "./data/spec_poa_dallas_2020.csv", index_col=0, parse_dates=True
+    "../data/spec_poa_dallas_2020.csv", index_col=0, parse_dates=True
 )
 spec_irrad_ts.columns = spec_irrad_ts.columns.astype(float)
 spec_irrad_ts = spec_irrad_ts.clip(lower=0)/1000
 
 meta_ts = pd.read_csv(
-    "./data/meta_ts_dallas_2020.csv", index_col=0, parse_dates=True
+    "../data/meta_ts_dallas_2020.csv", index_col=0, parse_dates=True
 )
 
 # %%
@@ -45,7 +45,7 @@ meta_ts = pd.read_csv(
 # exactly match the one used here.  However, the differences are minor enough
 # to not materially change the spectra.
 
-eqe = pd.read_csv('./data/eqe_tandem_2t.csv', index_col=0)
+eqe = pd.read_csv('../data/eqe_tandem_2t.csv', index_col=0)
 
 eqe = utils.interp_eqe_to_spec(eqe, spec_irrad_ts)
 

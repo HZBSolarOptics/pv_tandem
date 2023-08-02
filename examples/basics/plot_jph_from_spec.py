@@ -36,7 +36,7 @@ plt.rcParams["figure.dpi"] = 140
 # specific to the subcell names and the wavelengthsin nm as index. The EQE data
 # has to be between 0 and 1.
 
-example_eqe = pd.read_csv("./data/eqe_tandem_2t.csv", index_col=0)
+example_eqe = pd.read_csv("../data/eqe_tandem_2t.csv", index_col=0)
 ax = (example_eqe * 100).plot()
 ax.set_xlabel("Wavelength (nm)")
 ax.set_ylabel("Absorptance (%)")
@@ -49,7 +49,7 @@ plt.show()
 # nm and should have the unit W/m²/nm
 
 spec_irrad_ts = pd.read_csv(
-    "./data/spec_poa_dallas_2020.csv", index_col=0, parse_dates=True
+    "../data/spec_poa_dallas_2020.csv", index_col=0, parse_dates=True
 )
 spec_irrad_ts.columns = spec_irrad_ts.columns.astype(float)
 # converting to W/m²/nm from W/m²/µm and clipping negative values to zero

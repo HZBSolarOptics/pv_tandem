@@ -23,7 +23,7 @@ import pandas as pd
 import seaborn as sns
 
 meta_ts = pd.read_csv(
-    "./data/meta_ts_dallas_2020.csv", index_col=0, parse_dates=True
+    "../data/meta_ts_dallas_2020.csv", index_col=0, parse_dates=True
 )
 
 coord_dallas = dict(latitude = 32.8, longitude = -96.8)
