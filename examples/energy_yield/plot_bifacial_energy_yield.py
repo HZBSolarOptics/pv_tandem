@@ -98,8 +98,6 @@ electrical_parameters = {
     "RsTandem": 3,
     "j0": {"pero": 2.7e-18, "si": 1e-12},
     "n": {"pero": 1.1, "si": 1},
-    "Temp": {"pero": 25, "si": 25},
-    "noct": {"pero": 48, "si": 48},
     "tcJsc": {"pero": 0.0002, "si": 0.00032},
     "tcVoc": {"pero": -0.002, "si": -0.0041},
 }
