@@ -7,10 +7,181 @@ from pv_tandem.utils import (
     calc_current,
     interp_eqe_to_spec,
 )
-from pv_tandem.electrical_models import OneDiodeModel
-from typing import List, Dict, Optional
-from pv_tandem import electrical_models, irradiance_models, utils
 
+from typing import List, Dict, Optional
+from pv_tandem import irradiance_models
+
+from scipy.special import lambertw
+
+class OneDiodeModel:
+    """
+    A class to calculate the performance of a solar cell with a one diode model.
+
+    Parameters
+    ----------
+    tcJsc : float or np.ndarray
+        The temperature coefficient of the short-circuit current.
+    tcVoc : float or np.ndarray
+        The temperature coefficient of the open-circuit voltage.
+    R_shunt : float or np.ndarray
+        The shunt resistance.
+    R_series : float or np.ndarray
+        The series resistance.
+    n : float or np.ndarray
+        The diode ideality factor.
+    j0 : float or np.ndarray
+        The reverse saturation current.
+
+    Returns
+    -------
+    None
+
+    """
+    def __init__(self, tcJsc, tcVoc, R_shunt, R_series, n, j0):       
+        self.tcJsc = tcJsc
+        self.tcVoc = tcVoc
+        
+        # severeal parameters are converted to 1d arrays if are initilized to a
+        # scalar, in order to ensure that broadcasting works in the IV functions
+
+        if type(R_shunt) == np.ndarray:
+            self.R_shunt = R_shunt
+        else:
+            self.R_shunt = np.array([R_shunt])
+
+        if type(R_series) == np.ndarray:
+            self.R_series = R_series
+        else:
+            self.R_series = np.array([R_series])
+
+        if type(n) == np.ndarray:
+            self.n = n
+        else:
+            self.n = np.array([n])
+
+        if type(j0) == np.ndarray:
+            self.j0 = j0
+        else:
+            self.j0 = np.array([j0])
+
+    def calc_iv(self, Jsc, cell_temp, j_arr):
+        def lambertw_exp_large(x):
+            result = x - np.log(x) + np.log(x) / x
+            return result
+        
+        def lambertwlog(x):
+            res = np.zeros_like(x)
+            large_x_mask = x > 10
+            small_x = np.real(lambertw(np.exp(x[~large_x_mask]), tol=1e-8))
+            large_x = lambertw_exp_large(x[large_x_mask])
+
+            #x = np.where(large_x_mask, large_x, small_x)
+            
+            res[~large_x_mask] = small_x
+            res[large_x_mask] = large_x
+
+            return res
+
+        # Thermal voltage at room temperature in V
+        Vth = 0.02569
+
+        factorJsc = 1 + self.tcJsc * (cell_temp - 25)
+        factorVoc = 1 + self.tcVoc * (cell_temp - 25)
+
+        Jsc = Jsc * factorJsc
+
+        Voc_rt = (
+            Jsc / 1000 * self.R_shunt
+            - self.n
+            * Vth
+            * lambertwlog(
+                (
+                    np.log(self.j0 / 1000 * self.R_shunt)
+                    + self.R_shunt * (Jsc + self.j0) / (1000 * self.n * Vth)
+                    - np.log(self.n * Vth)
+                )
+            )
+            + self.j0 / 1000 * self.R_shunt
+        )
+
+        Voc_rt[Jsc < 0.1] = np.nan
+        Voc = Voc_rt * factorVoc
+
+        lambw = (
+            np.log(self.j0 / 1000 * self.R_shunt)[:, None]
+            + (
+                self.R_shunt[:, None]
+                * ((np.subtract.outer(Jsc, j_arr) + self.j0[:, None]))
+                / (1000 * self.n[:, None] * Vth)
+            )
+            - np.log(self.n * Vth)[:, None]
+        )
+
+        try:
+            V = (
+                np.subtract.outer(
+                    Jsc / 1000 * self.R_shunt,
+                    j_arr / 1000 * (self.R_shunt + self.R_series),
+                )
+                - (self.n * Vth)[:, None] * lambertwlog((lambw))
+                + (self.j0 / 1000 * self.R_shunt - Voc_rt + Voc)[:, None]
+            )
+        except:
+            V = (
+                (
+                    (Jsc / 1000 * self.R_shunt)[:, None]
+                    - (j_arr / 1000 * (self.R_shunt + self.R_series)[:, None])
+                )
+                - (self.n * Vth)[:, None] * lambertwlog((lambw))
+                + (self.j0 / 1000 * self.R_shunt - Voc_rt + Voc)[:, None]
+            )
+            
+        if hasattr(Jsc, "__len__"):
+            return np.real(V)
+        else:
+            return np.real(V)[0]
+            
+
+    def calc_iv_params(self, Jsc, cell_temp, j_arr=np.linspace(0, 45, 451)):
+
+        index = None        
+
+        if hasattr(Jsc, "values"):
+            index = Jsc.index
+            Jsc = Jsc.values
+
+        if hasattr(cell_temp, "values"):
+            cell_temp = cell_temp.values
+
+        V = self.calc_iv(Jsc, cell_temp, j_arr)
+        P = V * j_arr
+        idx_mpp = np.nanargmax(P, axis=1)
+        Vmpp = V[np.arange(0, len(V)), idx_mpp]
+        Voc = V[:, 0]
+        Pmax = np.nanmax(P, axis=1)
+        Jmpp = j_arr[idx_mpp]
+
+        Jsc = j_arr[(np.argmax((V < 0), axis=1) - 1).clip(min=0)]
+
+        FF = abs(Pmax) / abs(Jsc * Voc)
+
+        res = pd.DataFrame(
+            {
+                "Voc": Voc,
+                "Vmpp": Vmpp,
+                "Pmax": Pmax,
+                "FF": FF,
+                "Jsc": Jsc,
+                "Jmpp": Jmpp,
+            }
+        )
+        
+        # set index from Jsc if it was a pd.series
+        
+        if index is not None:
+            res.index = index
+
+        return res
 
 class _TandemSimulator:
     """
@@ -203,74 +374,6 @@ class _TandemSimulator:
         V = pd.concat(V, axis=1, keys=self.subcell_names)
         return V
 
-    def _calc_IV(self, Jsc, cell_temps, return_subsells=False):
-        """
-        Calculates the IV curves on the grid spcified by j_arr from the photocurrent
-        of the individual cells.
-
-        Parameters
-        ----------
-        Jsc : pandas.Dataframe
-            Time series of spectral irradiance in the plane of the solar cell
-            back side in case of a bifacial tandem. The names columns of the
-            DataFrame have to be the wavelength of the incidenting light in nm.
-
-        cell_temps : pandas.Dataframe
-             Time series of the cell temperatures. The columns of the dataframe
-             expected to be named like the subcell_names.
-
-        return_subsells : Bool
-            Defines if the voltage of the subcells should be returned alongside
-            the tandem voltage.
-
-        Returns
-        -------
-        If return_subsells is False:
-        V_tandem : pd.DataFrame
-            Dataframe containing IV data where the rows represent the timestamps
-            of the Jsc timeseries and the columns the current generated by the
-            cells (in mA/cm2)
-
-        If return_subsells is True:
-        V_tandem : pd.DataFrame
-            Dataframe containing IV data where the rows represent the timestamps
-            of the Jsc timeseries and the columns the current generated by the
-            cells (in mA/cm2)
-        V : pd.DataFrame
-            Dataframe containing IV data where the rows represent the timestamps
-            of the Jsc timeseries and the columns are a multiindex, where the
-            first level represents the subcells and the second level the current
-            generated by the cells (in mA/cm2)
-
-        Example
-        -------
-        See :ref:`sphx_glr_auto_examples_plot_tandem_ey.py` for a usage example.
-        """
-
-        V = []
-
-        for subcell in self.subcell_names:
-            # if type(cell_temps) == pd.Series:
-            #    cell_temps = self.cell_temps[subcell].values
-
-            V.append(
-                pd.DataFrame(
-                    self.electrical_models[subcell].calc_iv(
-                        Jsc[subcell].values,
-                        cell_temps[subcell].values,
-                        self.j_arr,
-                    ),
-                    columns=self.j_arr,
-                )
-            )
-
-        V = pd.concat(V, axis=1, keys=self.subcell_names)
-        V_tandem = V.groupby(level=1, axis=1).sum()
-
-        if return_subsells:
-            return V_tandem, V
-        else:
-            return V_tandem
 
     def calc_IV_stc(self, backside_current=None):
         """

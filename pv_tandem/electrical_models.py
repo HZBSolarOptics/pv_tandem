@@ -56,7 +56,6 @@ class OneDiodeModel:
         else:
             self.j0 = np.array([j0])
 
-    #@profile
     def calc_iv(self, Jsc, cell_temp, j_arr):
         def lambertw_exp_large(x):
             result = x - np.log(x) + np.log(x) / x
@@ -190,11 +189,11 @@ if __name__ == "__main__":
     res = pero_cell.calc_iv_params(np.array([22]), np.array([25]))
 
     iv = pero_cell.calc_iv(
-        np.array([22]), np.array([25]), j_arr=np.linspace(0, 45, 451)
+        np.array(22), np.array(25), j_arr=np.linspace(0, 45, 451)
     )
 
     df_iv = pd.DataFrame(
-        {"voltage": iv[0], "current": np.linspace(0, 45, 451)}
+        {"voltage": iv, "current": np.linspace(0, 45, 451)}
     )
 
     df_iv = df_iv.loc[df_iv["voltage"] > 0]
@@ -214,7 +213,7 @@ if __name__ == "__main__":
 
     int_factors_repeated = np.repeat(int_factors, 3)
 
-    T_arr = np.array([25, 55, 85])  # +273#np.arange(280, 340, 10)
+    T_arr = np.array([25, 55, 85])
     T_arr = np.tile(T_arr, 5)
 
     j_ph = 22.4 * int_factor
