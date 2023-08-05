@@ -19,11 +19,6 @@ class IrradianceSimulator:
 
         self.geo_instance = None
 
-        # whether the underlying data is representing a tmy
-
-        # whether the perez model should be used to determine the components of diffuse irradiance
-        # self.perez_diffuse = perez_diffuse
-
         self.dni = illumination_df.loc[:, "DNI"]
         self.dhi = illumination_df.loc[:, "DHI"]
         self.albedo = albedo
@@ -34,8 +29,6 @@ class IrradianceSimulator:
         self.input_parameter.update(geo_kw_parameter)
         self.input_parameter["zenith_sun"] = illumination_df.zenith
         self.input_parameter["azimuth_sun"] = illumination_df.azimuth
-        #self.input_parameter['dni'] = self.dni
-        #self.input_parameter['dhi'] = self.dhi
 
     def simulate(self, spacing, tilt, simple_results=True):
         """
