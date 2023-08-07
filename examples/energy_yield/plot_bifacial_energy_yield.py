@@ -24,7 +24,7 @@ Using spectral on-demand data from NREL and simulated EQE data from GENPRO4.
 from pv_tandem import (
     geo,
     utils,
-    bif_yield,
+    bifacial,
     solarcell_models,
     irradiance_models,
 )
@@ -71,14 +71,15 @@ illumination_df = illumination_df[["DNI", "DHI", "zenith", "azimuth"]]
 
 # The
 
-simulator = bif_yield.IrradianceSimulator(
+simulator = bifacial.IrradianceSimulator(
     illumination_df,
     albedo=0.3,
     module_length=1.96,
-    module_height=0.5,
+    mount_height=0.5,
+    module_spacing=6, module_tilt=25
 )
 
-irrad_poa = simulator.simulate(spacing=6, tilt=25, simple_results=True)
+irrad_poa = simulator.simulate(simple_results=True)
 
 # pvlib is used to calculate the solar cell temperature
 
