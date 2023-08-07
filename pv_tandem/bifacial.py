@@ -83,7 +83,7 @@ class ViewFactorSimulator:
         self.theta_m_rad = np.deg2rad(module_tilt)
         self.H = mount_height
         self.dist = module_spacing
- 
+
         if np.any(zenith_sun > 90):
             warnings.warn(
                 "Zenith angle larger then 90 deg was passed to simulation. Zenith angle is truncted to 90."
@@ -113,7 +113,6 @@ class ViewFactorSimulator:
                 np.cos(self.theta_S_rad),
             ]
         )
-        
 
     def module(self):  # some functions and values for the PV module
         """
@@ -126,9 +125,11 @@ class ViewFactorSimulator:
         self.n_m = np.array(
             [-np.sin(self.theta_m_rad), np.cos(self.theta_m_rad)]
         )  # normal to the module
-        self.n_m_3D = np.array([self.n_m[0], 0, self.n_m[1]])  # normal to the module
+        self.n_m_3D = np.array(
+            [self.n_m[0], 0, self.n_m[1]]
+        )  # normal to the module
         self.e_m_3D = np.array([self.e_m[0], 0, self.e_m[1]])
-        
+
     def calculate_view_factors(self):
         # initializing the results dictionary
         self.results = {}
@@ -141,7 +142,7 @@ class ViewFactorSimulator:
         self.calc_module_ground_matrix()
         self.calc_irradiance_module_ground_direct()
         self.calc_irradiance_module_ground_diffuse()
-        
+
         self.results["irradiance_module_front"] = (
             self.results["irradiance_module_front_sky_direct"]
             + self.results["irradiance_module_front_sky_diffuse"]
@@ -202,8 +203,12 @@ class ViewFactorSimulator:
         try:
             temp_irrad[:] = self.cos_alpha_mS[:, None]
             temp_irrad[np.greater.outer(l_shadow, self.l_array)] = 0
-            temp_front = np.where((self.cos_alpha_mS > 0)[:, None], temp_irrad, 0)
-            temp_back = np.where((self.cos_alpha_mS < 0)[:, None], -temp_irrad, 0)
+            temp_front = np.where(
+                (self.cos_alpha_mS > 0)[:, None], temp_irrad, 0
+            )
+            temp_back = np.where(
+                (self.cos_alpha_mS < 0)[:, None], -temp_irrad, 0
+            )
         except:
             temp_irrad[:] = self.cos_alpha_mS
             temp_irrad[np.greater.outer(l_shadow, self.l_array)] = 0
@@ -225,26 +230,28 @@ class ViewFactorSimulator:
         The result is only depended on the geometrie of the solar panel array.
         """
 
-        vectors_front = np.multiply.outer(self.L - self.l_array, self.e_m) - np.array(
-            [self.dist, 0]
+        vectors_front = np.multiply.outer(
+            self.L - self.l_array, self.e_m
+        ) - np.array([self.dist, 0])
+
+        vectors_front_normalized = (
+            vectors_front / np.linalg.norm(vectors_front, axis=1)[:, None]
         )
 
-        vectors_front_normalized =  vectors_front / np.linalg.norm(vectors_front, axis=1)[:,None]
-        
         cos_alpha_2 = np.dot(vectors_front, self.n_m) / np.linalg.norm(
             vectors_front, axis=1
         )
-        
-    
-        alpha_2_front = np.arctan2(np.cross(self.n_m, vectors_front_normalized),
-                          np.dot(vectors_front_normalized, self.n_m))
+
+        alpha_2_front = np.arctan2(
+            np.cross(self.n_m, vectors_front_normalized),
+            np.dot(vectors_front_normalized, self.n_m),
+        )
 
         self.tmp["alpha_2_front"] = alpha_2_front
-        
-        #np.arctan2(np.cross(vectors_front_normalized, self.n_m),
+
+        # np.arctan2(np.cross(vectors_front_normalized, self.n_m),
         #                  np.dot(vectors_front_normalized, self.n_m))
-        
-        
+
         spacing_alpha = np.linspace(-np.pi / 2, np.pi / 2, 1200)
         dist_alpha = np.cos(spacing_alpha)
 
@@ -252,19 +259,22 @@ class ViewFactorSimulator:
         dist_alpha = np.tile(dist_alpha, (self.module_steps, 1))
         dist_alpha[selector] = 0
 
-        np.trapz(dist_alpha, np.tile(spacing_alpha, (self.module_steps, 1)), axis=1) / 2
+        np.trapz(
+            dist_alpha, np.tile(spacing_alpha, (self.module_steps, 1)), axis=1
+        ) / 2
 
-        
         irradiance_front = (np.sin(alpha_2_front) + 1) / 2.0
 
-        vectors_back = np.multiply.outer(self.L - self.l_array, self.e_m) + np.array(
-            [self.dist, 0]
+        vectors_back = np.multiply.outer(
+            self.L - self.l_array, self.e_m
+        ) + np.array([self.dist, 0])
+        cos_epsilon_1 = np.dot(vectors_back, -self.n_m) / norm(
+            vectors_back, axis=1
         )
-        cos_epsilon_1 = np.dot(vectors_back, -self.n_m) / norm(vectors_back, axis=1)
 
         self.tmp["epsilon_1_back"] = np.pi / 2 - np.arccos(cos_epsilon_1)
 
-        sin_epsilon_2 = (1 - cos_epsilon_1 ** 2) ** 0.5
+        sin_epsilon_2 = (1 - cos_epsilon_1**2) ** 0.5
         irradiance_back = (1 - sin_epsilon_2) / 2
 
         self.results["irradiance_module_front_sky_diffuse"] = irradiance_front
@@ -273,7 +283,9 @@ class ViewFactorSimulator:
         ] = irradiance_front.mean()
 
         self.results["irradiance_module_back_sky_diffuse"] = irradiance_back
-        self.results["irradiance_module_back_sky_diffuse_mean"] = irradiance_back.mean()
+        self.results[
+            "irradiance_module_back_sky_diffuse_mean"
+        ] = irradiance_back.mean()
 
     def calc_shadow_field(self):
         """
@@ -321,13 +333,15 @@ class ViewFactorSimulator:
         # if the ground position is smaller then shadow start OR larger then
         # shadow end it is directly illuminated if shadow start (uc) < shadow end (uc)
         illum_array_1 = np.greater.outer(
-            shadow_start_uc, self.x_g_array,
+            shadow_start_uc,
+            self.x_g_array,
         ) | np.less.outer(shadow_end_uc, self.x_g_array)
 
         # if the ground position is smaller then shadow start AND larger then
         # shadow end it is directly illuminated if shadow start (uc) > shadow end (uc)
         illum_array_2 = np.greater.outer(
-            shadow_start_uc, self.x_g_array,
+            shadow_start_uc,
+            self.x_g_array,
         ) & np.less.outer(shadow_end_uc, self.x_g_array)
 
         # choose appropriet illumination array
@@ -338,16 +352,20 @@ class ViewFactorSimulator:
                 illum_array_1,
                 illum_array_2,
             )
-            illum_array_temp = illum_array_temp * np.cos(
-                self.theta_S_rad
-            )[:, None]
+            illum_array_temp = (
+                illum_array_temp * np.cos(self.theta_S_rad)[:, None]
+            )
         except:
             illum_array_temp = np.where(
-                (shadow_end_uc >= shadow_start_uc), illum_array_1, illum_array_2
+                (shadow_end_uc >= shadow_start_uc),
+                illum_array_1,
+                illum_array_2,
             )
             illum_array_temp = illum_array_temp * np.cos(self.theta_S_rad)
-            
-        self.results["radiance_ground_direct_emitted"] = illum_array_temp / np.pi
+
+        self.results["radiance_ground_direct_emitted"] = (
+            illum_array_temp / np.pi
+        )
 
     def calc_sin_B_i(self, i, x_g):
         """
@@ -432,7 +450,9 @@ class ViewFactorSimulator:
         arr_eta_zeta.sort(axis=0)
 
         # substract lower angle of ith row from higher angle of i+1 'th row
-        sky_view_factors = np.roll(arr_eta_zeta[0], -1, axis=0) - arr_eta_zeta[1]
+        sky_view_factors = (
+            np.roll(arr_eta_zeta[0], -1, axis=0) - arr_eta_zeta[1]
+        )
         # set negative sky_view_factors to zero
         sky_view_factors[sky_view_factors < 0] = 0
         # sum over all "windows" between module rows
@@ -441,7 +461,9 @@ class ViewFactorSimulator:
         irradiance_ground_diffuse_received = illum_array
 
         # division by pi converts irradiance into radiance assuming Lambertian scattering
-        self.results["radiance_ground_diffuse_emitted"] = irradiance_ground_diffuse_received / np.pi
+        self.results["radiance_ground_diffuse_emitted"] = (
+            irradiance_ground_diffuse_received / np.pi
+        )
 
     def module_ground_matrix_helper(self, lower_index, upper_index):
         """
@@ -492,7 +514,8 @@ class ViewFactorSimulator:
             # filling intensity matrix
             angle_index = (
                 np.floor(
-                    alpha_array * self.angle_steps / np.pi + self.angle_steps / 2.0
+                    alpha_array * self.angle_steps / np.pi
+                    + self.angle_steps / 2.0
                 ).astype(int)
                 - 1
             )
@@ -541,11 +564,15 @@ class ViewFactorSimulator:
         )
 
         # calculates the upper and lower index on ground for the visible area
-        lower_index_front = np.round(high_view_front / self.x_g_distance).astype(int)
+        lower_index_front = np.round(
+            high_view_front / self.x_g_distance
+        ).astype(int)
         upper_index_front = np.round(low_view / self.x_g_distance).astype(int)
 
         lower_index_back = np.round(low_view / self.x_g_distance).astype(int)
-        upper_index_back = np.round(high_view_back / self.x_g_distance).astype(int)
+        upper_index_back = np.round(high_view_back / self.x_g_distance).astype(
+            int
+        )
 
         intensity_matrix_front = self.module_ground_matrix_helper(
             lower_index_front, upper_index_front
@@ -569,9 +596,12 @@ class ViewFactorSimulator:
             # multiply ground radiance with correspoding ground radiance
             # and sum over ground index
             self.results[field_name] = (
-                self.results["radiance_ground_direct_emitted"] @ ground_view_factor.T
+                self.results["radiance_ground_direct_emitted"]
+                @ ground_view_factor.T
             )
-            self.results[field_name + "_mean"] = self.results[field_name].mean()
+            self.results[field_name + "_mean"] = self.results[
+                field_name
+            ].mean()
 
     def calc_irradiance_module_ground_diffuse(self):
         """
@@ -586,13 +616,18 @@ class ViewFactorSimulator:
             # and sum over ground index
             try:
                 self.results[field_name] = (
-                    ground_view_factor * self.results["radiance_ground_diffuse_emitted"]
+                    ground_view_factor
+                    * self.results["radiance_ground_diffuse_emitted"]
                 ).sum(axis=1)
             except:
                 self.results[field_name] = (
-                    ground_view_factor @ self.results["radiance_ground_diffuse_emitted"]
+                    ground_view_factor
+                    @ self.results["radiance_ground_diffuse_emitted"]
                 ).T
-            self.results[field_name + "_mean"] = self.results[field_name].mean()
+            self.results[field_name + "_mean"] = self.results[
+                field_name
+            ].mean()
+
 
 class IrradianceSimulator:
     def __init__(
@@ -613,7 +648,8 @@ class IrradianceSimulator:
         self.dhi = illumination_df.loc[:, "DHI"]
         self.albedo = albedo
 
-        super().__init__(module_length,
+        super().__init__(
+            module_length,
             module_tilt,
             mount_height,
             module_spacing,
@@ -621,7 +657,7 @@ class IrradianceSimulator:
             azimuth_sun=illumination_df["azimuth"],
             **numeric_kw_paras,
         )
-        
+
         self.view_factors = self.calculate_view_factors()
 
         self.dni = illumination_df.loc[:, "DNI"]
@@ -636,50 +672,83 @@ class IrradianceSimulator:
         try:
             diffuse = np.concatenate(
                 [
-                    self.geo_instance.results["irradiance_module_front_sky_diffuse"],
-                    self.geo_instance.results["irradiance_module_back_sky_diffuse"],
-                    self.geo_instance.results["irradiance_module_front_ground_diffuse"],
-                    self.geo_instance.results["irradiance_module_back_ground_diffuse"],
+                    self.geo_instance.results[
+                        "irradiance_module_front_sky_diffuse"
+                    ],
+                    self.geo_instance.results[
+                        "irradiance_module_back_sky_diffuse"
+                    ],
+                    self.geo_instance.results[
+                        "irradiance_module_front_ground_diffuse"
+                    ],
+                    self.geo_instance.results[
+                        "irradiance_module_back_ground_diffuse"
+                    ],
                 ],
             )
             diffuse = np.outer(self.dhi, diffuse)
-            
+
         except:
             diffuse = np.concatenate(
                 [
-                    self.geo_instance.results["irradiance_module_front_sky_diffuse"],
-                    self.geo_instance.results["irradiance_module_back_sky_diffuse"],
+                    self.geo_instance.results[
+                        "irradiance_module_front_sky_diffuse"
+                    ],
+                    self.geo_instance.results[
+                        "irradiance_module_back_sky_diffuse"
+                    ],
                 ],
             )
-            diffuse = np.tile(diffuse, (len(self.dhi),1))
-            diffuse = np.concatenate(
+            diffuse = np.tile(diffuse, (len(self.dhi), 1))
+            diffuse = (
+                np.concatenate(
+                    [
+                        self.geo_instance.results[
+                            "irradiance_module_front_ground_diffuse"
+                        ],
+                        self.geo_instance.results[
+                            "irradiance_module_back_ground_diffuse"
+                        ],
+                        diffuse,
+                    ],
+                    axis=1,
+                )
+                * (self.dhi).values[:, None]
+            )
+
+        direct = (
+            np.concatenate(
                 [
-                    self.geo_instance.results["irradiance_module_front_ground_diffuse"],
-                    self.geo_instance.results["irradiance_module_back_ground_diffuse"],
-                    diffuse
+                    self.geo_instance.results[
+                        "irradiance_module_front_sky_direct"
+                    ],
+                    self.geo_instance.results[
+                        "irradiance_module_back_sky_direct"
+                    ],
+                    self.geo_instance.results[
+                        "irradiance_module_front_ground_direct"
+                    ],
+                    self.geo_instance.results[
+                        "irradiance_module_back_ground_direct"
+                    ],
                 ],
-                axis=1
-            )*(self.dhi).values[:,None]
-            
-        direct = np.concatenate(
-            [                
-                self.geo_instance.results["irradiance_module_front_sky_direct"],
-                self.geo_instance.results["irradiance_module_back_sky_direct"],
-                self.geo_instance.results["irradiance_module_front_ground_direct"],
-                self.geo_instance.results["irradiance_module_back_ground_direct"],
-            ],
-            axis=1,
-        ) * self.dni.values[:,None]
+                axis=1,
+            )
+            * self.dni.values[:, None]
+        )
 
-        #direct_ts = direct#self.dni[:, None] * direct
+        # direct_ts = direct#self.dni[:, None] * direct
 
-        column_names = ["front_sky", "back_sky","front_ground", "back_ground"]
+        column_names = ["front_sky", "back_sky", "front_ground", "back_ground"]
         prefixes = ["_diffuse", "_direct"]
-        column_names = [name + prefix for prefix in prefixes for name in column_names]
+        column_names = [
+            name + prefix for prefix in prefixes for name in column_names
+        ]
 
         level_names = ["contribution", "module_position"]
         multi_index = pd.MultiIndex.from_product(
-            [column_names, range(self.geo_instance.module_steps)], names=level_names
+            [column_names, range(self.geo_instance.module_steps)],
+            names=level_names,
         )
 
         results = pd.DataFrame(
@@ -687,30 +756,44 @@ class IrradianceSimulator:
             columns=multi_index,
             index=self.dni.index,
         )
-        
-        ground_reflected = results.columns.get_level_values(0).str.contains('ground')
-        
-        results.loc[:,ground_reflected] = results.loc[:,ground_reflected].apply(lambda x: x*self.albedo, raw=True, axis=0)
-        
+
+        ground_reflected = results.columns.get_level_values(0).str.contains(
+            "ground"
+        )
+
+        results.loc[:, ground_reflected] = results.loc[
+            :, ground_reflected
+        ].apply(lambda x: x * self.albedo, raw=True, axis=0)
+
         if simple_results:
-            back_columns = results.columns.get_level_values("contribution").str.contains(
-                "back"
-            )
+            back_columns = results.columns.get_level_values(
+                "contribution"
+            ).str.contains("back")
             front_columns = ~back_columns
-            results = pd.concat([
-                results.loc[:, front_columns].groupby(level="module_position", axis=1).sum().mean(axis=1),
-                results.loc[:, back_columns].groupby(level="module_position", axis=1).sum().mean(axis=1)
-                ], keys=['front', 'back'], axis=1)
-            
+            results = pd.concat(
+                [
+                    results.loc[:, front_columns]
+                    .groupby(level="module_position", axis=1)
+                    .sum()
+                    .mean(axis=1),
+                    results.loc[:, back_columns]
+                    .groupby(level="module_position", axis=1)
+                    .sum()
+                    .mean(axis=1),
+                ],
+                keys=["front", "back"],
+                axis=1,
+            )
+
         return results
-    
+
+
 if __name__ == "__main__":
-    
     import matplotlib.pyplot as plt
     import pvlib
     import seaborn as sns
-    
-    coord_berlin = dict(latitude =52.5, longitude =13.4)
+
+    coord_berlin = dict(latitude=52.5, longitude=13.4)
 
     # %%
     # The geometry of the solar cell array and the sun position is defined.
@@ -718,128 +801,155 @@ if __name__ == "__main__":
     # parameter ground_steps and defaults to 101. The first example shows the
     # distibution of irradiance of the direct and diffuse components on these 101
     # ground elements for a zenith angle of 31.0 deg and azimuth of 144.1 deg
-    
-    vfs = ViewFactorSimulator(module_length=1.92,
+
+    vfs = ViewFactorSimulator(
+        module_length=1.92,
         module_tilt=52,
         mount_height=0.5,
         module_spacing=7.3,
         zenith_sun=31.9,
         azimuth_sun=144.1,
-        ground_steps=101)
-    
+        ground_steps=101,
+    )
+
     view_factors = vfs.calculate_view_factors()
-    
+
     fig, ax = plt.subplots(dpi=150)
-    
-    ax.plot(view_factors['radiance_ground_diffuse_emitted']*np.pi*100)
-    ax.plot(view_factors['radiance_ground_direct_emitted']*np.pi*100)
-    
-    ax.legend(['fraction of DHI', 'fraction of DNI'])
-    
-    ax.set_ylabel('Ground irradiance fraction (%)')
-    ax.set_xlabel('Ground array position (-)')
-    
+
+    ax.plot(view_factors["radiance_ground_diffuse_emitted"] * np.pi * 100)
+    ax.plot(view_factors["radiance_ground_direct_emitted"] * np.pi * 100)
+
+    ax.legend(["fraction of DHI", "fraction of DNI"])
+
+    ax.set_ylabel("Ground irradiance fraction (%)")
+    ax.set_xlabel("Ground array position (-)")
+
     plt.show()
-    
-    
+
     # %%
     # Next we look at how the evolution of the illumination develops during sommer
     # solstice, equinox and winter solstice in Berlin.
     # First the date ranges are defined and the python library pvlib is used to
     # calculate the solar position (zenith and azimuth angle).
-    # For each of these days the ground illumination is calucated the the radiance 
+    # For each of these days the ground illumination is calucated the the radiance
     # is converted to irradiance by multipling with pi.
-    
+
     dt_list = [
-        pd.date_range("20190620 5:00","20190620 21:00", freq='10min', tz='Europe/Berlin'),
-        pd.date_range("20190923  5:00","20190923 21:00", freq='10min', tz='Europe/Berlin'),
-        pd.date_range("20191120  5:00","20191120 21:00", freq='10min', tz='Europe/Berlin')]
-    
-    fig, axes = plt.subplots(1,3,dpi=150, figsize=(8,4), sharey=True)
+        pd.date_range(
+            "20190620 5:00", "20190620 21:00", freq="10min", tz="Europe/Berlin"
+        ),
+        pd.date_range(
+            "20190923  5:00",
+            "20190923 21:00",
+            freq="10min",
+            tz="Europe/Berlin",
+        ),
+        pd.date_range(
+            "20191120  5:00",
+            "20191120 21:00",
+            freq="10min",
+            tz="Europe/Berlin",
+        ),
+    ]
+
+    fig, axes = plt.subplots(1, 3, dpi=150, figsize=(8, 4), sharey=True)
     dates = ["20-06-2019", "23-09-2019", "20-11-2019"]
-    
+
     for i, dt in enumerate(dt_list):
         solar_pos = pvlib.solarposition.get_solarposition(dt, **coord_berlin)
-        
-        vfs = ViewFactorSimulator(module_length=1.92,
+
+        vfs = ViewFactorSimulator(
+            module_length=1.92,
             module_tilt=52,
             mount_height=0.5,
             module_spacing=7.3,
-            zenith_sun=solar_pos['zenith'].values,
-            azimuth_sun=solar_pos['azimuth'].values,
+            zenith_sun=solar_pos["zenith"].values,
+            azimuth_sun=solar_pos["azimuth"].values,
             ground_steps=101,
             module_steps=12,
-            angle_steps=180,)
-        
+            angle_steps=180,
+        )
+
         view_factors = vfs.calculate_view_factors()
 
-        
-        df_rgde = pd.DataFrame(view_factors['radiance_ground_direct_emitted']*np.pi*100,
-                               index = dt.strftime("%H:%M"),
-                               )
-        df_rgde.columns = (vfs.dist*df_rgde.columns / len(df_rgde.columns)).to_series().round(1)
-        
+        df_rgde = pd.DataFrame(
+            view_factors["radiance_ground_direct_emitted"] * np.pi * 100,
+            index=dt.strftime("%H:%M"),
+        )
+        df_rgde.columns = (
+            (vfs.dist * df_rgde.columns / len(df_rgde.columns))
+            .to_series()
+            .round(1)
+        )
+
         ax = axes[i]
-        sns.heatmap(df_rgde,
-                    ax = ax,
-                    cbar = i>=2,
-                    yticklabels=10,
-                    vmin=0, vmax=90,
-                    )
-        
+        sns.heatmap(
+            df_rgde,
+            ax=ax,
+            cbar=i >= 2,
+            yticklabels=10,
+            vmin=0,
+            vmax=90,
+        )
+
         ax.set_xlabel("Ground position (m)")
         if i == 0:
             ax.set_ylabel("Time of day")
-        
+
         ax.set_title(dates[i])
-        
-        if i >=2:
-            ax.collections[0].colorbar.set_label('Ground irradiance fraction (%)')
-    
-    
+
+        if i >= 2:
+            ax.collections[0].colorbar.set_label(
+                "Ground irradiance fraction (%)"
+            )
+
     fig.tight_layout()
     plt.show()
-    
+
     # %%
     # The last example demonstrates the inhomogenity of the irradiance on the front
     # and backside along the length of the PV module. The number of points for which
     # the irradiance is evaluated along the module is ocntrolled by the parameter
     # module_steps and defaults to 12.
-    
-    vfs = ViewFactorSimulator(module_length=1.92,
+
+    vfs = ViewFactorSimulator(
+        module_length=1.92,
         module_tilt=52,
         mount_height=0.5,
         module_spacing=7.3,
         zenith_sun=31.9,
-        azimuth_sun=144.1)
-    
+        azimuth_sun=144.1,
+    )
+
     view_factors = vfs.calculate_view_factors()
-    
-    sky_keys = ['irradiance_module_front_sky_direct',
-     'irradiance_module_front_sky_diffuse',
-     'irradiance_module_back_sky_direct',
-     'irradiance_module_back_sky_diffuse']
-    
-    ground_keys = ['irradiance_module_front_ground_direct',
-        'irradiance_module_front_ground_diffuse',
-        'irradiance_module_back_ground_direct',
-        'irradiance_module_back_ground_diffuse']
-    
+
+    sky_keys = [
+        "irradiance_module_front_sky_direct",
+        "irradiance_module_front_sky_diffuse",
+        "irradiance_module_back_sky_direct",
+        "irradiance_module_back_sky_diffuse",
+    ]
+
+    ground_keys = [
+        "irradiance_module_front_ground_direct",
+        "irradiance_module_front_ground_diffuse",
+        "irradiance_module_back_ground_direct",
+        "irradiance_module_back_ground_diffuse",
+    ]
+
     legend_1 = ["front direct", "front diffuse", "back direct", "back diffuse"]
     legend_2 = ["back direct", "back diffuse", "back direct", "back diffuse"]
-    
-    
-    fig, (ax1, ax2) = plt.subplots(2, figsize=(6,6), dpi=150, sharex=True)
-    
+
+    fig, (ax1, ax2) = plt.subplots(2, figsize=(6, 6), dpi=150, sharex=True)
+
     for key in sky_keys:
         ax1.plot(vfs.l_array, view_factors[key])
-        
+
     for key in ground_keys:
-        ax2.plot(vfs.l_array, view_factors[key])   
-    
-    ax1.set_ylabel('Irradiance fraction (%)')
+        ax2.plot(vfs.l_array, view_factors[key])
+
+    ax1.set_ylabel("Irradiance fraction (%)")
     ax1.legend(legend_1)
-    ax2.set_ylabel('Irradiance fraction (%)')
-    ax2.set_xlabel('Position on module (m)')
+    ax2.set_ylabel("Irradiance fraction (%)")
+    ax2.set_xlabel("Position on module (m)")
     ax2.legend(legend_2)
-    
