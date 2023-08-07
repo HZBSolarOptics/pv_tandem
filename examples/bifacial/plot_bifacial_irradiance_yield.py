@@ -15,7 +15,7 @@ Demonstrating the irradiance calculation on the front and backside over one year
 # python library pvlib
 
 
-from pv_tandem import bif_yield
+from pv_tandem.bifacial import IrradianceSimulator
 import matplotlib.pyplot as plt
 import numpy as np
 import pvlib
@@ -36,13 +36,15 @@ illumination_df['azimuth'] = solar_pos['azimuth']
 
 illumination_df = illumination_df[['DNI','DHI','zenith','azimuth']]
 
-simulator = bif_yield.IrradianceSimulator(illumination_df,
+simulator = IrradianceSimulator(illumination_df,
         albedo=0.3,
         module_length=1.96,
-        module_height=0.5,
+        mount_height=0.5,
+        module_spacing=6,
+        module_tilt=25
     )
 
-irrad_poa = simulator.simulate(spacing=6, tilt=25, simple_results=True)
+irrad_poa = simulator.simulate(simple_results=True)
 
 fig, ax = plt.subplots(dpi=150)
 (irrad_poa.groupby(irrad_poa.index.dayofyear).sum()/1000).plot(ax=ax)
@@ -57,7 +59,15 @@ scan_res = []
 
 for tilt_angle in tilt_angles:
     for spacing in spacings:
-        res_tmp = simulator.simulate(spacing=spacing, tilt=tilt_angle, simple_results=True)
+        simulator = IrradianceSimulator(
+            illumination_df,
+            albedo=0.3,
+            module_length=1.96,
+            mount_height=0.5,
+            module_spacing=spacing,
+            module_tilt=tilt_angle
+            )
+        res_tmp = simulator.simulate(simple_results=True)
 
         # sum over the year and convert from Wh to kWh
         res_tmp = res_tmp.sum()/1000
@@ -81,7 +91,7 @@ ax3.set_title("Combined")
 ax1.set_xlabel('Module spacing (m)')
 ax2.set_xlabel('Module spacing (m)')
 ax3.set_xlabel('Module spacing (m)')
-ax1.set_ylabel('Tile angle (deg)')
+ax1.set_ylabel('Tilt angle (deg)')
 ax2.set_ylabel("",visible=False)
 ax3.set_ylabel("",visible=False)
 
