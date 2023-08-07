@@ -340,7 +340,7 @@ class ViewFactorSimulator:
             )
             illum_array_temp = illum_array_temp * np.cos(
                 self.theta_S_rad
-            ).values[:, None]
+            )[:, None]
         except:
             illum_array_temp = np.where(
                 (shadow_end_uc >= shadow_start_uc), illum_array_1, illum_array_2
@@ -765,8 +765,8 @@ if __name__ == "__main__":
             module_tilt=52,
             mount_height=0.5,
             module_spacing=7.3,
-            zenith_sun=solar_pos['zenith'],
-            azimuth_sun=solar_pos['azimuth'],
+            zenith_sun=solar_pos['zenith'].values,
+            azimuth_sun=solar_pos['azimuth'].values,
             ground_steps=101,
             module_steps=12,
             angle_steps=180,)
