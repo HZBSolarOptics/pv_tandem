@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from pv_tandem.electrical_models import OneDiodeModel
+from pv_tandem.solarcell_models import OneDiodeModel
 
 one_diode = OneDiodeModel(
     tcJsc=-0.001, tcVoc=-0.0013, R_shunt=5000, R_series=1.5, n=1, j0=1e-12
