@@ -50,7 +50,7 @@ setup(
     packages=find_packages(include=['pv_tandem', 'pv_tandem.*']),
     package_data={'pv_tandem': ['data/*.csv']},
     test_suite='tests',
-    url='https://github.com/nano-sippe/pv_tandem',
+    url='https://github.com/HZBSolarOptics/pv_tandem',
     version='0.1.1',
     zip_safe=False,
 )
