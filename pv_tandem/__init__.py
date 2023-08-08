@@ -1,7 +1,6 @@
 """Top-level package for pv_tandem."""
 
 from pv_tandem import utils
-from pv_tandem import electrical_models
 from pv_tandem import solarcell_models
 from pv_tandem import bifacial
 

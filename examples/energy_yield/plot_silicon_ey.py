@@ -20,7 +20,7 @@ Using non-spectral data from NREL
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from pv_tandem.electrical_models import OneDiodeModel
+from pv_tandem.solarcell_models import OneDiodeModel
 import pvlib
 
 plt.rcParams['figure.dpi'] = 140

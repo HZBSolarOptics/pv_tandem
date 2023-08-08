@@ -18,13 +18,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pv_tandem import electrical_models
+from pv_tandem import solarcell_models
 
 # %%
 # After loading the nessesary python libraries, the diode model is defined with the temperature coefficents for Voc
 # and Jsc, series and shunt resistance, ideality factor and dark saturation current.
 
-one_diode = electrical_models.OneDiodeModel(
+one_diode = solarcell_models.OneDiodeModel(
     tcJsc=0.00032, tcVoc=-0.0041, R_shunt=2000, R_series=2, n=1, j0=1e-11
 )
 
