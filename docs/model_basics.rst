@@ -23,7 +23,7 @@ The photocurrent density of a solar cell depends on two quantities, the spectral
 
 .. math::
 
-    J_\text{ph} = e\int_{\text{300 nm}}^{\text{1200 nm}} EQE(\lambda)E(\lambda)\frac{\lambda}{hc} \mathrm{d}\lambda
+    J_\text{ph} = e\int_{\text{300 nm}}^{\text{1200 nm}} \mathrm{EQE}(\lambda)E(\lambda)\frac{\lambda}{hc} \mathrm{d}\lambda
 
 with e as elementary charge and E as spectral irradiance.
 
