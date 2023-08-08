@@ -36,30 +36,4 @@ pv_tandem can easily be installed with pip:
 
     pip install pv_tandem
 
-If you want to be able to directly run the examples you can install pv_tandems together with all nessesary libraries with
-
-.. code-block:: bash
-
-    pip install pv_tandem[doc]
-
-The source code is hosted at GitHub at: https://github.com/HZBSolarOptics/pv_tandem
-
-If you want to install from source clone the project from github:
-
-.. code-block:: bash
-
-    git clone https://github.com/nano-sippe/pv_tandem
-
-Then change into the pv_tandem folder and install with pip
-
-.. code-block:: bash
-
-    pip install .
-
-Credits
--------
-
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+For more installation options see the `getting started <https://pv-tandem.readthedocs.io/en/latest/usage.html>`_ section of the documentation. See the `example gallery<https://pv-tandem.readthedocs.io/en/latest/auto_examples/index.html>`_ to see use cases of pv_tandem.
