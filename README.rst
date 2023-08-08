@@ -36,4 +36,4 @@ pv_tandem can easily be installed with pip:
 
     pip install pv_tandem
 
-For more installation options see the `getting started <https://pv-tandem.readthedocs.io/en/latest/usage.html>`_ section of the documentation. See the `example gallery<https://pv-tandem.readthedocs.io/en/latest/auto_examples/index.html>`_ to see use cases of pv_tandem.
+For more installation options see the `getting started <https://pv-tandem.readthedocs.io/en/latest/usage.html>`_ section of the documentation. See the `example gallery <https://pv-tandem.readthedocs.io/en/latest/auto_examples/index.html>`_ to see use cases of pv_tandem.
