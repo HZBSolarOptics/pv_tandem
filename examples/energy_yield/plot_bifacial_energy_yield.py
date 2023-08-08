@@ -22,7 +22,6 @@ Using spectral on-demand data from NREL and simulated EQE data from GENPRO4.
 
 
 from pv_tandem import (
-    geo,
     utils,
     bifacial,
     solarcell_models,
