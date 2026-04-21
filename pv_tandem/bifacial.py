@@ -86,7 +86,7 @@ class ViewFactorSimulator:
 
         if np.any(zenith_sun > 90):
             warnings.warn(
-                "Zenith angle larger then 90 deg was passed to simulation. Zenith angle is truncted to 90."
+                "Zenith angle larger then 90 deg was passed to simulation. Zenith angle is truncated to 90."
             )
             zenith_sun[zenith_sun > 90] = 90
         self.theta_S_rad = np.deg2rad(zenith_sun)
@@ -259,7 +259,7 @@ class ViewFactorSimulator:
         dist_alpha = np.tile(dist_alpha, (self.module_steps, 1))
         dist_alpha[selector] = 0
 
-        np.trapz(
+        np.trapezoid(
             dist_alpha, np.tile(spacing_alpha, (self.module_steps, 1)), axis=1
         ) / 2
 
