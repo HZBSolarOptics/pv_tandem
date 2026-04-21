@@ -755,17 +755,17 @@ class IrradianceSimulator(ViewFactorSimulator):
             results = pd.concat(
                 [
                     results.loc[:, front_columns]
-                    #.groupby(level="module_position", axis=1)
-                    .T.groupby(level="module_position") 
+                    .groupby(level="module_position", axis=1)
+                    #.T.groupby(level="module_position") 
                     .sum()
-                    #.mean(axis=1),
-                    .mean(),
+                    .mean(axis=1),
+                    #.mean(),
                     results.loc[:, back_columns]
-                    #.groupby(level="module_position", axis=1)
-                    .T.groupby(level="module_position")
+                    .groupby(level="module_position", axis=1)
+                    #.T.groupby(level="module_position")
                     .sum()
-                    #.mean(axis=1),
-                    .mean(),
+                    .mean(axis=1),
+                    #.mean(),
                 ],
                 keys=["front", "back"],
                 axis=1,
