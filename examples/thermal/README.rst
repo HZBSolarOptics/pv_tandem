@@ -1,13 +1,8 @@
 Examples for thermal modelling
 ==============================
 
-This folder contains **working examples** demonstrating how to use the core functionality of the models implemented in ``pv_tandem/thermal``. These models allow to calculate the annual energy yield of PV modules with and without a *sub-bandgap reflector* (SBR).
+This folder contains **working examples** and **notebooks** demonstrating how to use the core functionality of the models implemented in ``pv_tandem/thermal``. These models allow to calculate the annual energy yield of PV modules with and without a *sub-bandgap reflector* (SBR). The models are used for the work presented in K. Jäger, J. Mandal, B. P. Rand, F. Meggers, and C. Becker, “How do sub-bandgap reflectors affect the performance of PV modules?,” arXiv 2604.20757 (2026).
 
-Each example is designed to be:
-
-- Minimal
-- Self-contained
-- Easy to run and adapt
 
 Examples
 --------
