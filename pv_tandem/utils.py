@@ -33,7 +33,7 @@ def calc_current(spec: pd.DataFrame, eqe: pd.DataFrame) -> np.ndarray:
             wl_arr * 1e-9, axis=1
         )
         current = pd.Series(
-            np.trapz(photon_flux, x=wl_arr) * constants.e, index=spec.index
+            np.trapezoid(photon_flux, x=wl_arr) * constants.e, index=spec.index
         )
         try:
             current.rename(eqe.name, inplace=True)
