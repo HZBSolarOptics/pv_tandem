@@ -24,6 +24,9 @@ def projection(a, b):
 
     return projection
 
+def cross2D(a, b):
+    return a[0] * b[:,1] - a[1] * b[:,0]
+
 
 class ViewFactorSimulator:
     def __init__(
@@ -88,6 +91,7 @@ class ViewFactorSimulator:
             warnings.warn(
                 "Zenith angle larger then 90 deg was passed to simulation. Zenith angle is truncated to 90."
             )
+            zenith_sun = zenith_sun.copy()
             zenith_sun[zenith_sun > 90] = 90
         self.theta_S_rad = np.deg2rad(zenith_sun)
         self.phi_S_rad = np.deg2rad(azimuth_sun)
@@ -243,7 +247,7 @@ class ViewFactorSimulator:
         )
 
         alpha_2_front = np.arctan2(
-            np.cross(self.n_m, vectors_front_normalized),
+            cross2D(self.n_m, vectors_front_normalized),
             np.dot(vectors_front_normalized, self.n_m),
         )
 
