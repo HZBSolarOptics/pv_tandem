@@ -47,7 +47,7 @@ def calc_current(spec: pd.DataFrame, eqe: pd.DataFrame) -> np.ndarray:
         photon_flux = (norm_absorbtion / constants.h / constants.c).multiply(
             wl_arr * 1e-9, axis=0
         )
-        current = np.trapz(photon_flux, x=wl_arr, axis=0) * constants.e
+        current = np.trapezoid(photon_flux, x=wl_arr, axis=0) * constants.e
 
     return current
     # return photo_flux.apply(np.trapz, x=wl_arr, axis=1) * constants.e
@@ -140,7 +140,7 @@ def calc_j0_RT(
         eqe_wl_array = eqe.index
 
     product = eqe.values.flatten() * bbr(eqe_wl_array * 1e-9, 300).T
-    integral = np.trapz(y=product, x=eqe_wl_array.T * 1e-9)
+    integral = np.trapezoid(y=product, x=eqe_wl_array.T * 1e-9)
 
     j0 = (
         integral * 2 * np.pi * constants.e / lqe_ele * 0.1

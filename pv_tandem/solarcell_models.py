@@ -581,7 +581,7 @@ class TandemSimulator2T(_TandemSimulator):
 
         V = self.calc_IV_individual(Jsc, cell_temps)
 
-        V_tandem = V.groupby(level=1, axis=1).sum()
+        V_tandem = V.T.groupby(level=1).sum().T
 
         if return_subsells:
             return V_tandem, V
@@ -1030,5 +1030,4 @@ if __name__ == "__main__":
           """
     )
 
-    asdf
     plt.plot(power)
