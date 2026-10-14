@@ -5,10 +5,10 @@ with and without sub-bandgap reflecting coatings.
 This example is for a NSRDB* dataset with spectral irradiance data
 * National Solar Radiation Database
 
-Example by Klaus Jaeger, 2026-04-20
+Example by Klaus Jaeger, 2026-10-14
 """
 
-from pv_tandem.thermal import GetLocData, CalcEY
+from pv_tandem.thermal import GetAM15Data, GetLocData, CalcEY
 
 # Initialize PV module dictionary
 pv_dict = {
@@ -20,10 +20,10 @@ pv_dict = {
     'module_tilt_deg': 34.5,            # optimal tilt for TMY 2024 data in Princeton
     'module_plane_azimuth_deg': 180,    # PV module is facing South
     'ground_steps': 101,                # steps in view factor model
-
+    
     # Environmental parameter
     'albedo': 0.3,
-
+    
     # Parameters for temperature models (Ross, Fuentes or SAPM, from pvlib)
     'fuentes_module_emissivity': 0.84,  # Default: 0.84, used in Fuentes model
     'noct': 45,                         # Used in Ross model     
@@ -32,9 +32,15 @@ pv_dict = {
                                         # 1: glass/glass, close roof
                                         # 2: glass/polymer, open rack
                                         # 3: glass/polymer, insulated back
-
+    
+    # Parameters for sub-bandgap reflector (SBR) and J_sc calculation
+    'j_sc_STC_no_EQE': 39,              # Short circuit current density at STC when no EQE data is available
+    'use_EQE': True,                    # Use EQE data from an input file
+    'wl_j_sc_min_nm': 300,              # lower bound for J_sc calcuation when EQE data is available
+    'wl_j_sc_max_ref_nm': 1200,         # upper bound for J_sc calcuation for reference case when EQE data is available
+    'wl_SBR_cutoff_nm': 1150,           # cutoff wavelength for the SBR
+    
     # Parameters for electrical one-diode model
-    'j_sc_STC': 39,                     # Short circuit current density at STC
     'PCE': 24.76,                       # Power conversion efficiency of PV module at STC in %
     'tc_P': -0.40,                      # Temperature coefficient for power in %/K
     'tc_j_sc': 0.03,                    # Temperature coefficient for short-circuit current density in %/K
@@ -43,31 +49,40 @@ pv_dict = {
     'R_series': 1.5,                    # Series resistance
     'n': 1,                             # Diode ideality factor
     'j_0': 1e-12,                       # Dark current density
-
+    
     # Thermal coating parameter
-    'loss': 0,                          # Loss of thermal coating
-
-    # Filepath to csv file containing PV module reflectance
-    'reflection_filepath': 'data_thermal/SEMSC_Subedi_ea_PERC_UVVisNIR_sim_2020_Fig5b.csv'
+    'loss': 0                           # Loss of thermal coating
     }
 
-# General configuration variables
+# Some general configuration
 config_dict = {'irrad_model': 'vf',     # Irradiation model. "vf" or "simple"
                'temp_model': 'SAPM',    # Temperature model "Ross", "Fuentes", or "SAPM"
-               'spectral': True         # Set, whether NSRDB data is spectral or not
-              }
+               'spectral': True,        # Set, whether NSRDB data is spectral or not
+               'calc_j_sc': True        # J_sc calculated for each spectrum (instead for AM1.5 only)
+              }          
 
-# Load NSRDB data and populate the "loc_data" dictionary
-nsrdb_data_filepath = 'data_thermal/princeton-2024-1223393-fixed_tilt_35_spectral.csv'
-loc_data = GetLocData(nsrdb_data_filepath = nsrdb_data_filepath,
-                      pv_reflection_filepath = pv_dict['reflection_filepath'],
-                      spectral_boolean =config_dict['spectral']
-                      )
+# File paths:
+reflection_filepath = 'data_thermal/SEMSC_Subedi_ea_PERC_UVVisNIR_sim_2020_Fig5b_sim.csv'
+EQE_filepath = 'data_thermal/SEMSC_Subedi_ea_PERC_UVVisNIR_sim_2020_Fig6_B_sim_enc.csv'
 
-# Initialize Class "CalcEY"
-ey_test = CalcEY(loc_data = loc_data.data,
-                 pv_dict = pv_dict,
-                 config_dict = config_dict)
+am15_data = GetAM15Data(pv_reflection_filepath = reflection_filepath,
+                                                  pv_eqe_filepath = EQE_filepath,
+                                                  wl_jsc_max_ref_nm=pv_dict['wl_j_sc_max_ref_nm'], #
+                                                  wl_sbr_cutoff_nm=pv_dict['wl_SBR_cutoff_nm'] #lambda_cutoff
+                                                 ) 
+loc_data = GetLocData('data_thermal/princeton-2024-1223393-fixed_tilt_35_spectral.csv',
+                                                pv_reflection_filepath = reflection_filepath,
+                                                pv_eqe_filepath = EQE_filepath,
+                                                spectral_boolean = True,
+                                                wl_jsc_max_ref_nm = pv_dict['wl_j_sc_max_ref_nm'], #
+                                                wl_sbr_cutoff_nm = pv_dict['wl_SBR_cutoff_nm'] #lambda_cutoff
+                                               )         
+ey_test = CalcEY(am15_data_obj = am15_data,
+                                           loc_data_obj = loc_data,
+                                           pv_dict = pv_dict,
+                                           config_dict = config_dict
+                                          )
+
 ey_test.get_ey()    # Calculate annual energy yield with one-diode model
 ey_test.get_ey_tc() # Calculate annual energy yield with simple model
 ey_test.print_res() # Print some results
