@@ -1,16 +1,18 @@
 # requirements_dev.txt: tools for developing the pv_tandem package itself
 # (version bumping, testing, building, documentation, releases).
 #
-# These pinned versions are outdated and were not tested with Python 3.11.
-# They are NOT needed to run the package, or the examples and Jupyter
-# notebooks in examples/thermal that reproduce the results of arXiv:2604.20757.
+# The minimum versions of pip, wheel, pytest and black were raised to fix
+# known security vulnerabilities (October 2026). The other pinned tools are
+# old and have not been tested with current Python versions.
 #
+# These tools are NOT needed to run the package, or the examples and Jupyter
+# notebooks in examples/thermal that reproduce the results of arXiv:2604.20757.
 # To run those, use environment.yml (conda) or requirements.txt (pip) in the
 # top folder of this repository.
 
-pip==19.2.3
+pip>=26.2.0
 bump2version==0.5.11
-wheel==0.33.6
+wheel>=0.38.1
 watchdog==0.9.0
 flake8==3.7.8
 tox==3.14.0
@@ -18,5 +20,5 @@ coverage==4.5.4
 Sphinx==1.8.5
 twine==1.14.0
 
-pytest==6.2.4
-black==21.7b0
+pytest>=9.0.3
+black>=26.3.1
