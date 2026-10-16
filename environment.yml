@@ -1,0 +1,14 @@
+name: pv_tandem_thermal
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.15
+  - numpy=2.4.6
+  - pandas=3.0.3
+  - scipy=1.17.1
+  - pvlib=0.15.0
+  - matplotlib=3.11.0
+  - jupyterlab
+  - pip
+  - pip:
+      - .

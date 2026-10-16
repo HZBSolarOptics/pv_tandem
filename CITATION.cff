@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below. If you use the thermal module (thermal.py), please also cite the associated paper."
+type: software
+title: "pv_tandem"
+abstract: "Python toolbox for simulation and energy yield calculations of single junction and tandem solar cells with classical (monofacial) or bifacial illumination."
+authors:
+  - family-names: "Tillmann"
+    given-names: "Peter"
+  - family-names: "Jäger"
+    given-names: "Klaus"
+    orcid: "https://orcid.org/0000-0002-6008-9559"
+    affiliation: "Helmholtz-Zentrum Berlin für Materialien und Energie GmbH, Berlin, Germany"
+version: "0.2.0"
+date-released: "2026-10-16"
+license: MIT
+repository-code: "https://github.com/HZBSolarOptics/pv_tandem"
+url: "https://pv-tandem.readthedocs.io"
+keywords:
+  - photovoltaics
+  - tandem solar cells
+  - energy yield
+  - thermal modelling
+preferred-citation:
+  type: article
+  title: "How do sub-bandgap reflectors affect the performance of photovoltaic modules?"
+  authors:
+    - family-names: "Jäger"
+      given-names: "Klaus"
+      orcid: "https://orcid.org/0000-0002-6008-9559"
+    - family-names: "Mandal"
+      given-names: "Jyotirmoy"
+      orcid: "https://orcid.org/0000-0001-8124-5234"
+    - family-names: "Rand"
+      given-names: "Barry P."
+      orcid: "https://orcid.org/0000-0003-4409-8751"
+    - family-names: "Meggers"
+      given-names: "Forrest"
+      orcid: "https://orcid.org/0000-0002-9037-7578"
+    - family-names: "Becker"
+      given-names: "Christiane"
+      orcid: "https://orcid.org/0000-0003-4658-4358"
+  year: 2026
+  url: "https://arxiv.org/abs/2604.20757"
+  notes: "arXiv:2604.20757"

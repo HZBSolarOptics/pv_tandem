@@ -10,7 +10,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-INSTALL_REQUIRES = ['pvlib >= 0.7.0', 'numpy', 'pandas', 'scipy']
+INSTALL_REQUIRES = ['pvlib >= 0.7.0', 'numpy >= 2.0', 'pandas', 'scipy']
 
 TESTS_REQUIRE = ['pytest>=3',]
 EXTRAS_REQUIRE = {
@@ -25,9 +25,9 @@ EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
 
 
 setup(
-    author="Peter Tillmann",
-    author_email='Peter.tillmann@helmholtz-berlin.de',
-    python_requires='>=3.6',
+    author="Peter Tillmann, Klaus Jäger",
+    author_email='klaus.jaeger@helmholtz-berlin.de',
+    python_requires='>=3.9',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
@@ -51,6 +51,6 @@ setup(
     package_data={'pv_tandem': ['data/*.csv']},
     test_suite='tests',
     url='https://github.com/HZBSolarOptics/pv_tandem',
-    version='0.1.1',
+    version='0.2.0',
     zip_safe=False,
 )

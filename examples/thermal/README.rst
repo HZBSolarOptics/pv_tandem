@@ -10,7 +10,7 @@ Examples
 2. ``example_02_sbr_princeton_spectral.py`` A script to calculate the energy yield of a PV module with and without an SBR when the NSRDB data has spectral data.
 
 Notebooks
---------
+---------
 
 These notebooks are linked to K. Jäger, J. Mandal, B. P. Rand, F. Meggers, and C. Becker. "How do sub-bandgap reflectors affect the performance of photovoltaic modules?" arXiv 2604.20757 (v2, 2026)
 

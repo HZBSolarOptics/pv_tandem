@@ -243,7 +243,8 @@ class ViewFactorSimulator:
         )
 
         alpha_2_front = np.arctan2(
-            np.cross(self.n_m, vectors_front_normalized),
+            self.n_m[0] * vectors_front_normalized[:, 1]
+            - self.n_m[1] * vectors_front_normalized[:, 0],
             np.dot(vectors_front_normalized, self.n_m),
         )
 

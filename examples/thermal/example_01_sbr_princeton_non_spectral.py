@@ -64,24 +64,25 @@ config_dict = {'irrad_model': 'vf',     # Irradiation model. "vf" or "simple"
 # File paths:
 reflection_filepath = 'data_thermal/SEMSC_Subedi_ea_PERC_UVVisNIR_sim_2020_Fig5b_sim.csv'
 EQE_filepath = 'data_thermal/SEMSC_Subedi_ea_PERC_UVVisNIR_sim_2020_Fig6_B_sim_enc.csv'
+loc_filepath = 'data_thermal/princeton_1223393_40.33_-74.66_tmy-2024.csv'
 
 am15_data = GetAM15Data(pv_reflection_filepath = reflection_filepath,
-                                                  pv_eqe_filepath = EQE_filepath,
-                                                  wl_jsc_max_ref_nm=pv_dict['wl_j_sc_max_ref_nm'], #
-                                                  wl_sbr_cutoff_nm=pv_dict['wl_SBR_cutoff_nm'] #lambda_cutoff
-                                                 ) 
-loc_data = GetLocData('data_thermal/princeton_1223393_40.33_-74.66_tmy-2024.csv',
-                                                pv_reflection_filepath = reflection_filepath,
-                                                pv_eqe_filepath = EQE_filepath,
-                                                spectral_boolean = True,
-                                                wl_jsc_max_ref_nm = pv_dict['wl_j_sc_max_ref_nm'], #
-                                                wl_sbr_cutoff_nm = pv_dict['wl_SBR_cutoff_nm'] #lambda_cutoff
-                                               )         
+                        pv_eqe_filepath = EQE_filepath,
+                        wl_jsc_max_ref_nm=pv_dict['wl_j_sc_max_ref_nm'], #
+                        wl_sbr_cutoff_nm=pv_dict['wl_SBR_cutoff_nm'] #lambda_cutoff
+                       ) 
+loc_data = GetLocData(nsrdb_data_filepath = loc_filepath,
+                      pv_reflection_filepath = reflection_filepath,
+                      pv_eqe_filepath = EQE_filepath,
+                      spectral_boolean = True,
+                      wl_jsc_max_ref_nm = pv_dict['wl_j_sc_max_ref_nm'], #
+                      wl_sbr_cutoff_nm = pv_dict['wl_SBR_cutoff_nm'] #lambda_cutoff
+                     )         
 ey_test = CalcEY(am15_data_obj = am15_data,
-                                           loc_data_obj = loc_data,
-                                           pv_dict = pv_dict,
-                                           config_dict = config_dict
-                                          )
+                 loc_data_obj = loc_data,
+                 pv_dict = pv_dict,
+                 config_dict = config_dict
+                )
 
 ey_test.get_ey()    # Calculate annual energy yield with one-diode model
 ey_test.get_ey_tc() # Calculate annual energy yield with simple model
