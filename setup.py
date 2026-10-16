@@ -27,7 +27,7 @@ EXTRAS_REQUIRE['all'] = sorted(set(sum(EXTRAS_REQUIRE.values(), [])))
 setup(
     author="Peter Tillmann, Klaus Jäger",
     author_email='klaus.jaeger@helmholtz-berlin.de',
-    python_requires='>=3.9',
+    python_requires='>=3.10',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
