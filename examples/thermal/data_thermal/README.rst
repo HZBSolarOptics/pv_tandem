@@ -55,8 +55,8 @@ Files and their origin in the publication:
 
 * ``SEMSC_Subedi_ea_PERC_UVVisNIR_sim_2020_Fig5b_sim.csv``: simulated reflectance :math:`R_\mathrm{enc}` of the
   encapsulated PERC B module, with scattering included (Fig. 5b).
-* ``SEMSC_Subedi_ea_PERC_UVVisNIR_sim_2020_Fig6_B_sim_enc.csv`` external quantum efficiency of the encapsulated module,
-  :math:`\mathrm{EQE}_\mathrm{enc}`, estimated from the EQE of the bare cell (Fig. 6b) as described below.
+* ``SEMSC_Subedi_ea_PERC_UVVisNIR_sim_2020_Fig6_B_sim_enc.csv``: external quantum efficiency of the encapsulated module,
+  :math:`\mathrm{EQE}_\mathrm{enc}`, estimated from the EQE of the bare cell (Fig. 6) as described below.
 
 The data were digitized from the figures of the publication. 
 
@@ -75,6 +75,6 @@ Reference:
 
 I. Subedi, T. J. Silverman, M. G. Deceglie, and N. J. Podraza, "PERC silicon
 PV infrared to ultraviolet optical model", Solar Energy Materials and Solar
-Cells 215, 110655 (2020), <DOI>
+Cells 215, 110655 (2020), https://doi.org/10.1016/j.solmat.2020.110655
 
 <Statement on the terms of reuse of these data.>

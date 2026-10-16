@@ -115,5 +115,4 @@ ENV/
 graveyard
 docs/auto_examples
 pv_tandem/local_scripts.py
-examples/thermal/anaconda_projects/db/project_filebrowser.db
-examples/thermal/notebooks/anaconda_projects/db/project_filebrowser.db
+anaconda_projects/

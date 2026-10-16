@@ -60,10 +60,23 @@ needed for the notebooks and is included in both files.
 Where to get it
 ---------------
 
-pv_tandem can easily be installed with pip:
+The basic functionality of pv_tandem (without the thermal module) can easily be
+installed from PyPI with pip:
 
 .. code-block:: bash
 
     pip install pv_tandem
+
+The thermal module (``thermal.py``, version 0.2.0 and later) is not available
+on PyPI. To use it, download this repository (from GitHub, or as the archived
+version on Zenodo) and install it from the downloaded folder:
+
+.. code-block:: bash
+
+    pip install .
+
+The examples and Jupyter notebooks for the thermal module are in
+``examples/thermal``. The section "Thermal module" gives the environment used
+for the results in the manuscript.
 
 For more installation options see the `getting started <https://pv-tandem.readthedocs.io/en/latest/usage.html>`_ section of the documentation. See the `example gallery <https://pv-tandem.readthedocs.io/en/latest/auto_examples/index.html>`_ to see several use cases of pv_tandem.

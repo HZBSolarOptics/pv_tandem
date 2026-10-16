@@ -1,3 +1,12 @@
+# Exact versions used for the results in the manuscript (arXiv:2604.20757).
+# Python 3.11 was used. These pinned versions require Python >= 3.11.
+# The package itself runs on Python >= 3.10, see setup.py.
+#
+# Run these commands in the top folder of the downloaded repository
+# (GitHub or Zenodo archive). The package is installed from this folder,
+# not from PyPI, since the thermal module is not available there:
+#   pip install -r requirements.txt
+#   pip install .
 numpy==2.4.6
 pandas==3.0.3
 scipy==1.17.1
