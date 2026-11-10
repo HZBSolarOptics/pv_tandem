@@ -77,4 +77,7 @@ I. Subedi, T. J. Silverman, M. G. Deceglie, and N. J. Podraza, "PERC silicon
 PV infrared to ultraviolet optical model", Solar Energy Materials and Solar
 Cells 215, 110655 (2020), https://doi.org/10.1016/j.solmat.2020.110655
 
-<Statement on the terms of reuse of these data.>
+The digitized data are published here with the permission of the authors
+under the Creative Commons Attribution 4.0 International License
+(CC BY 4.0, https://creativecommons.org/licenses/by/4.0/). If you use these
+data, please cite the reference above.

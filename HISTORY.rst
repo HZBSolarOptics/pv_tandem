@@ -3,13 +3,14 @@ History
 =======
 
 
-0.2.0 (2026-10-16)
+0.2.0 (2026-11-10)
 ------------------
 
 * Added the thermal module (``thermal.py``) for module temperature and energy
   yield calculations for photovoltaic modules with and without sub-bandgap reflectors,
-  as used in "How do sub-bandgap reflectors affect the performance of PV
-  modules?" (arXiv:2604.20757).
+  as used in "How do sub-bandgap reflectors affect the performance of photovoltaic
+  modules?" (arXiv:2604.20757, Sustainable Energy & Fuels (2026),
+  https://doi.org/10.1039/D6SE00463F (arXiv:2604.20757)).
 * Added examples and Jupyter notebooks for the thermal module in
   ``examples/thermal``, including the analysis of the effect of sub-bandgap
   reflectors on module degradation and cumulative energy yield.
