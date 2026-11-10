@@ -116,3 +116,5 @@ graveyard
 docs/auto_examples
 pv_tandem/local_scripts.py
 anaconda_projects/
+*~
+*.un~

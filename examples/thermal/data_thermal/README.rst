@@ -3,7 +3,8 @@ Data for the thermal examples
 
 This folder contains the input data for the examples in ``examples/thermal``,
 which reproduce the results of "How do sub-bandgap reflectors affect the
-performance of PV modules?" (arXiv:2604.20757). The data are of two kinds:
+performance of photovoltaic modules?" Sustainable Energy & Fuels (2026),
+https://doi.org/10.1039/D6SE00463F (arXiv:2604.20757). The data are of two kinds:
 
 * weather and irradiance data from the National Solar Radiation Database
   (NSRDB), and

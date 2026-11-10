@@ -38,6 +38,13 @@ All wavelength arguments are given in NANOMETRES. Internally the ASTM-G173
 grid is in nm (``wl_array_nm``) while the NSRDB spectral column labels are in
 micrometres (``wl_array_um``); conversions are made explicit at the point of
 use.
+
+Reference
+---------
+The model is described in K. Jäger, J. Mandal, B. P. Rand, F. Meggers, and
+C. Becker, "How do sub-bandgap reflectors affect the performance of
+photovoltaic modules?", Sustainable Energy & Fuels (2026),
+https://doi.org/10.1039/D6SE00463F (arXiv:2604.20757).
 """
 import os
 import sys
@@ -653,7 +660,7 @@ class CalcEY:
         None.
 
         References
-        ---------
+        ----------
         [1] K. Jaeger, P. Tillmann, and C. Becker, Optics Express 28, 4751 (2020).
         """
         illum_full = self.loc_data.copy()
