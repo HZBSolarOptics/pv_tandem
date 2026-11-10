@@ -10,9 +10,9 @@ Examples
 2. ``example_02_sbr_princeton_spectral.py`` A script to calculate the energy yield of a PV module with and without an SBR when the NSRDB data has spectral data.
 
 Notebooks
---------
+---------
 
-These notebooks are linked to K. Jäger, J. Mandal, B. P. Rand, F. Meggers, and C. Becker. "How do sub-bandgap reflectors affect the performance of photovoltaic modules?" arXiv 2604.20757 (2026)
+These notebooks are linked to K. Jäger, J. Mandal, B. P. Rand, F. Meggers, and C. Becker. "How do sub-bandgap reflectors affect the performance of photovoltaic modules?" Sustainable Energy & Fuels (2026), https://doi.org/10.1039/D6SE00463F (arXiv:2604.20757).
 
-1. ``notebook_01_color_maps.ipynb`` A Jupyter notebook to recreate Fig. 4 of the manuscript: Colormaps for the change in the annual energy yield as a function of the temperature coefficient for power and the loss factor.
-2. ``notebook_02_degradation.ipynb`` A Jupyter notebook to perform the calculations on degradation and to recreate Figs. 5 and 6 of the manuscript.
+1. ``notebook_01_energy_yield.ipynb`` A Jupyter notebook to recreate Figs. 3 and 5 of the article: Colormaps for the change in the annual energy yield as a function of the temperature coefficient for power and the loss factor.
+2. ``notebook_02_degradation.ipynb`` A Jupyter notebook to perform the calculations on degradation and to recreate Figs. 6 and 7 of the article.

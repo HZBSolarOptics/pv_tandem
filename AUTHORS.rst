@@ -5,9 +5,10 @@ Credits
 Development Lead
 ----------------
 
-* Peter Tillmann <Peter.tillmann@helmholtz-berlin.de>
+* Peter Tillmann
+* Klaus Jäger <klaus.jaeger@helmholtz-berlin.de>
 
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Jonas Schaible
